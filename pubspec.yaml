@@ -1,0 +1,7 @@
+name: jwt
+description: A sample command-line application
+dependencies:
+  crypto: any
+  logging: any
+  option: any
+  unittest: any
