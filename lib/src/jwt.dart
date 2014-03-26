@@ -120,7 +120,7 @@ class JwtClaimSet extends _JosePayload with _JwtClaimSetMixin {
 
 }
 
-class MutableJwtClaimSet extends Object with _JwtClaimSetMixin 
+class MutableJwtClaimSet extends _JosePayload with _JwtClaimSetMixin 
     implements JwtClaimSet {
   String issuer;
   String subject;
@@ -130,9 +130,6 @@ class MutableJwtClaimSet extends Object with _JwtClaimSetMixin
   JwtClaimSet toImmutable() => 
       new JwtClaimSet(issuer, subject, expiry, issuedAt);
 
-  // TODO: cheating
-  @override
-  Iterable<int> get encodedBytes => toImmutable().encodedBytes;
 }
 
 abstract class _JwtClaimSetMixin  {
@@ -165,6 +162,4 @@ abstract class _JwtClaimSetMixin  {
     // TODO: could support issuer and subject validation (by passing in lookup functions in context)
     // but may leave that to clients 
   }
-  
-
 }

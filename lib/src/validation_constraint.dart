@@ -10,3 +10,13 @@ class ConstraintViolation {
   @override
   String toString() => message;
 }
+
+
+class ConstraintViolations {
+  final Set<ConstraintViolation> violations;
+  
+  // TODO: likely too simplistic
+  String get summaryMessage => violations.join('\n');
+  
+  ConstraintViolations(this.violations);
+}
