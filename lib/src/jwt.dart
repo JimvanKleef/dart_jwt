@@ -33,6 +33,9 @@ class JwtValidationContext extends JwsValidationContext {
       this.claimSetValidationContext) 
     : super(signatureContext);
   
+  JwtValidationContext.withSharedSecret(String sharedSecret) 
+      : this(new JwaSignatureContext(sharedSecret),
+          new JwtClaimSetValidationContext());
 }
 
 //class MutableJwt implements Jwt {
