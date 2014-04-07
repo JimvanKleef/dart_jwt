@@ -10,7 +10,7 @@ void main()  {
     String sign(String signingInput, String sharedSecret) {
       final jwsSignature = new JwsSignature.create(signingInput, JsonWebAlgorithm.HS256, 
           new JwaSignatureContext(sharedSecret));
-      return jwsSignature.decode();
+      return jwsSignature.encode();
 //      return JsonWebAlgorithm.HS256.sign(signingInput, new JwaSignatureContext(sharedSecret));
     }
     test('', () {

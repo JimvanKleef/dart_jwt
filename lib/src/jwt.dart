@@ -83,10 +83,8 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
     
     // TODO: need to add support for diff algorithms
     final JwsHeader header = new JwsHeader(JwsType.JWT, JsonWebAlgorithm.HS256);
-    final Map headerJson = header.toJson();
-    final Map claimSetJson = claimSet.toJson();
-    final String signingInput = _encodeJsonSegmentsToString([headerJson, claimSetJson],
-        stringPadding: true);
+    final String signingInput = _JoseObject.encodeSegments([header, claimSet]);
+
     final JwsSignature signature = 
         new JwsSignature.create(signingInput, header.algorithm, signatureContext);
     

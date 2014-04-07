@@ -68,7 +68,7 @@ class JwsHeader extends _JoseHeader {
   String toString() => 'JwsHeader[type=$type, algorithm=$algorithm]';
 
   @override
-  Iterable<int> get encodedBytes => JSON.encode(toJson()).codeUnits;
+  Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
 }
 
 //abstract class JwsPayload {
@@ -100,7 +100,7 @@ class JwsSignature extends Base64EncodedData {
   }
 
   @override
-  Iterable<int> get encodedBytes => signatureBytes;
+  Iterable<int> get decodedBytes => signatureBytes;
 }
 
 class JwsType {

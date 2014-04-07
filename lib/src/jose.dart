@@ -15,48 +15,47 @@ abstract class _JoseObject<H extends _JoseHeader, P extends _JosePayload> {
   /**
    * Returns the encoded form of the object 
    */
-  String encode() => _encodeSegmentsToString(segments.map((s) => s.encodedBytes));
+  String encode() => encodeSegments(segments); 
   
   _JoseObject(this.header, this.payload);
+  
+  static String encodeSegments(Iterable<Base64EncodedData> segments) => 
+      segments.map((s) => s.encode()).join('.'); 
 }
 
 /**
- * Represents some data that is base64 encoded
+ * Represents some data that may be base64 encoded. It provides a decoded form
+ * as bytes in [decodedBytes] and an encoded form via [encode]
  */
 abstract class Base64EncodedData {
-  Iterable<int> get encodedBytes;
+  /// The decoded (or raw) form of the data as bytes
+  Iterable<int> get decodedBytes;
   
-  String decode() => _bytesToBase64(encodedBytes);
+  /// The base64 encoded form of the data
+  String encode() => _bytesToBase64(decodedBytes);
 }
 
+/**
+ * Base64EncodedData that has a json form. The json form is available via
+ * [toJson]
+ */
 abstract class Base64EncodedJson extends Base64EncodedData {
   Map toJson();
   
   @override
-  Iterable<int> get encodedBytes => JSON.encode(toJson()).codeUnits;
+  Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
 }
 
-
+/**
+ * Base class for a [_JoseObject]'s header
+ */
 abstract class _JoseHeader extends Base64EncodedJson {  
 }
 
+/**
+ * Base class for a [_JoseObject]'s payload
+ */
 abstract class _JosePayload extends Base64EncodedJson {  
-}
-
-String _encodeJsonSegmentsToString(Iterable<Map> jsonSegs, 
-                                   { bool stringPadding: true }) { 
-  return _encodeSegmentsToString(jsonSegs.map((m) => JSON.encode(m).codeUnits),
-                            stringPadding: stringPadding);
-}
-
-String _encodeSegmentsToString(Iterable<Iterable<int>> segments, 
-                               { bool stringPadding: true }) {
-  return _encodeSegments(segments, stringPadding: stringPadding).join('.');
-}
-
-Iterable<String> _encodeSegments(Iterable<Iterable<int>> segments, 
-    { bool stringPadding: true }) {
-  return segments.map((s) => _bytesToBase64(s, stringPadding: stringPadding));
 }
 
 String _bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) { 
