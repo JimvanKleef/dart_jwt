@@ -1,20 +1,28 @@
 part of jwt;
 
-//abstract class Base64EncodedSegments {
-//  Iterable<String> get encodedSegments;
-//  Iterable<Iterable<int>> get decodedSegments;
-//}
-
+/**
+ * Base class for objects defined in the Jose specs that are strings made up of
+ * base64 encoded [segments]. i.e. when encoded they are of the form 
+ * `<base 64 encoded header>.<base64 encoded payload>.<another base64 encoded segment>`
+ *  
+ * At minimum they have a [header] and a [payload] as the first two segments.
+ */
 abstract class _JoseObject<H extends _JoseHeader, P extends _JosePayload> {
   final H header;
   final P payload;
   Iterable<Base64EncodedData> get segments;
   
+  /**
+   * Returns the encoded form of the object 
+   */
   String encode() => _encodeSegmentsToString(segments.map((s) => s.encodedBytes));
   
   _JoseObject(this.header, this.payload);
 }
 
+/**
+ * Represents some data that is base64 encoded
+ */
 abstract class Base64EncodedData {
   Iterable<int> get encodedBytes;
   
@@ -35,22 +43,26 @@ abstract class _JoseHeader extends Base64EncodedJson {
 abstract class _JosePayload extends Base64EncodedJson {  
 }
 
-String _encodeJsonSegmentsToString(Iterable<Map> jsonSegs, { bool stringPadding: true }) => 
-    _encodeSegmentsToString(jsonSegs.map((m) => JSON.encode(m).codeUnits),
+String _encodeJsonSegmentsToString(Iterable<Map> jsonSegs, 
+                                   { bool stringPadding: true }) { 
+  return _encodeSegmentsToString(jsonSegs.map((m) => JSON.encode(m).codeUnits),
                             stringPadding: stringPadding);
-
+}
 
 String _encodeSegmentsToString(Iterable<Iterable<int>> segments, 
-                               { bool stringPadding: true }) =>
-    _encodeSegments(segments, stringPadding: stringPadding).join('.');
+                               { bool stringPadding: true }) {
+  return _encodeSegments(segments, stringPadding: stringPadding).join('.');
+}
 
 Iterable<String> _encodeSegments(Iterable<Iterable<int>> segments, 
-    { bool stringPadding: true }) =>
-    segments.map((s) => _bytesToBase64(s, stringPadding: stringPadding));
+    { bool stringPadding: true }) {
+  return segments.map((s) => _bytesToBase64(s, stringPadding: stringPadding));
+}
 
-String _bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) => 
-    _unpadIfRequired(CryptoUtils.bytesToBase64(bytes, urlSafe: true), stringPadding: stringPadding);
-
+String _bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) { 
+  return _unpadIfRequired(CryptoUtils.bytesToBase64(bytes, urlSafe: true), 
+        stringPadding: stringPadding);
+}
 
 Iterable<Iterable<int>> _decodeSegmentString(String base64EncodedSegmentString) =>
     _decodeSegments(base64EncodedSegmentString.split('.'));
