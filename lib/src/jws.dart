@@ -8,12 +8,6 @@ import 'util.dart';
 
 typedef JosePayload PayloadParser(Map json);
 
-class JwsValidationContext {
-  final JwaSignatureContext signatureContext;
-
-  JwsValidationContext(this.signatureContext);
-}
-
 /**
  * Represents a [JSON Web Signature](http://tools.ietf.org/html/draft-ietf-jose-json-web-signature-24).
  * 
@@ -47,6 +41,8 @@ abstract class JsonWebSignature<P extends JosePayload> extends JoseObject<JwsHea
 
 }
 
+/// A header for a [JsonWebSignature] defining the [type] of JWS object and
+/// [algorithm] used in the signature
 class JwsHeader extends JoseHeader {
   final JwsType type;
   final JsonWebAlgorithm algorithm;
@@ -73,6 +69,7 @@ class JwsHeader extends JoseHeader {
   Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
 }
 
+/// Encapsulates the actual signature for a [JsonWebSignature]
 class JwsSignature extends Base64EncodedData {
   final List<int> signatureBytes;
 
@@ -105,6 +102,7 @@ class JwsSignature extends Base64EncodedData {
   Iterable<int> get decodedBytes => signatureBytes;
 }
 
+/// The type of [JsonWebSignature] object
 class JwsType {
   final String name;
 
@@ -122,3 +120,11 @@ class JwsType {
 
   String toString() => '$name';
 }
+
+class JwsValidationContext {
+  final JwaSignatureContext signatureContext;
+
+  JwsValidationContext(this.signatureContext);
+}
+
+

@@ -3,17 +3,15 @@ library jwt.jwt;
 import 'jose.dart';
 import 'jwa.dart';
 import 'jws.dart';
+import 'jwt_claimset.dart';
+export 'jwt_claimset.dart';
 import 'validation_constraint.dart';
-import 'util.dart';
-
-typedef JwtClaimSet ClaimSetParser(Map json);
-
-JwtClaimSet _defaultClaimSetParser(Map json) => new JwtClaimSet.fromJson(json);
 
 /**
  * Represents a [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19)
  */
 abstract class JsonWebToken<T extends JwtClaimSet> {
+  /// The payload of a JWT is it's claim set
   T get claimSet;
   
   factory JsonWebToken.decode(String jwtToken, 
@@ -31,30 +29,23 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
   // What makes sense for jwe?
   Set<ConstraintViolation> validate(JwtValidationContext validationContext) ;
   
-  
+  /// Encodes the JWT into a string. The form differs depending on what 
+  /// container (JWS or JWE) houses the JWT.
+  /// This is the form that is sent across the wire
   String encode();
 }
 
-class JwtValidationContext extends JwsValidationContext {
-  final JwtClaimSetValidationContext claimSetValidationContext;
-  
-  JwtValidationContext(JwaSignatureContext signatureContext, 
-      this.claimSetValidationContext) 
-    : super(signatureContext);
-  
-  JwtValidationContext.withSharedSecret(String sharedSecret) 
-      : this(new JwaSignatureContext(sharedSecret),
-          new JwtClaimSetValidationContext());
-}
-
-class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T> implements JsonWebToken {
+/**
+ * Represents a [JsonWebToken] that is encoded within a [JsonWebSignature]
+ */
+class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T> 
+    implements JsonWebToken {
   T get claimSet => payload;
   
   _JwtInJws._internal(JwsHeader header, T claimSet, JwsSignature signature, 
       String signingInput) 
     : super(header, claimSet, signature, signingInput);
 
-  // TODO hard to factor out into JWS ctr but largely common across JWS impls
   factory _JwtInJws.decode(String jwtToken, JwsValidationContext validationContext, 
       ClaimSetParser claimSetParser) {
     
@@ -103,68 +94,20 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T> implements Js
   
 }
 
-class JwtClaimSetValidationContext {
-  final Duration expiryTolerance;
+class JwtValidationContext extends JwsValidationContext {
+  final JwtClaimSetValidationContext claimSetValidationContext;
   
-  const JwtClaimSetValidationContext( 
-      { this.expiryTolerance: const Duration(seconds: 30) } );
+  JwtValidationContext(JwaSignatureContext signatureContext, 
+      this.claimSetValidationContext) 
+    : super(signatureContext);
+  
+  JwtValidationContext.withSharedSecret(String sharedSecret) 
+      : this(new JwaSignatureContext(sharedSecret),
+          new JwtClaimSetValidationContext());
 }
 
-
-class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
-  final String issuer;
-  final String subject;
-  final DateTime expiry;
-  final DateTime issuedAt;
-  
-  JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt);
-  
-  JwtClaimSet.fromJson(Map json)
-      : issuer = json['iss'],
-        subject = json['sub'],
-        expiry = decodeIntDate(json['exp']),
-        issuedAt = decodeIntDate(json['iat']);
-
-}
-
-class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin 
-    implements JwtClaimSet {
-  String issuer;
-  String subject;
-  DateTime expiry;
-  DateTime issuedAt;
-
-  JwtClaimSet toImmutable() => 
-      new JwtClaimSet(issuer, subject, expiry, issuedAt);
-
-}
-
-abstract class _JwtClaimSetMixin  {
-  String get issuer;
-  String get subject;
-  DateTime get expiry;
-  DateTime get issuedAt;
-
-  Map toJson() {
-    return {
-      'iat' : encodeIntDate(issuedAt),
-      'exp' : encodeIntDate(expiry),
-      'iss' : issuer,
-      'sub' : subject
-    };
-  }
-  
-  String toString() => 'JwtClaimSet[issuer=$issuer]';
     
-  Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
-    final now = new DateTime.now();
-    final diff = now.difference(expiry);
-    if (diff > validationContext.expiryTolerance) {
-      return new Set()..add(new ConstraintViolation(
-          'JWT expired. Expiry ($expiry) is more than tolerance '
-          '(${validationContext.expiryTolerance}) before now ($now)'));
-    }
-    
-    return new Set.identity();
-  }
-}
+typedef JwtClaimSet ClaimSetParser(Map json);
+
+JwtClaimSet _defaultClaimSetParser(Map json) => new JwtClaimSet.fromJson(json);
+
