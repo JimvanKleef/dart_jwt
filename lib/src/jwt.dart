@@ -68,8 +68,7 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
     if (validationContext != null) {
       final Set<ConstraintViolation> violations = jwt.validate(validationContext);
       if (violations.isNotEmpty) {
-        // TODO: better exception type and better message
-        throw new ArgumentError('jwt is invalid. $violations');
+        throw new ConstraintViolations('jwt is invalid', violations);
       }
     }
     

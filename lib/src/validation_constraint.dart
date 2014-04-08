@@ -1,7 +1,13 @@
 library validation.constraint;
 
-// TODO: this should be moved into a separate validat project
+// TODO: this should be moved into a separate validate project
 
+/**
+ * Represents a constraint that was violated.
+ * 
+ * _Note: it is likely that there will be more structure added in the future
+ * similar to that in the Java Bean Validation api
+ */
 class ConstraintViolation {
   final String message;
 
@@ -13,10 +19,13 @@ class ConstraintViolation {
 
 
 class ConstraintViolations {
+  final String preamble;
   final Set<ConstraintViolation> violations;
   
   // TODO: likely too simplistic
-  String get summaryMessage => violations.join('\n');
+  String get summaryMessage => 
+      '$preamble. The following constraints were violated\n'
+      '${violations.join("\n")}';
   
-  ConstraintViolations(this.violations);
+  ConstraintViolations(this.preamble, this.violations);
 }
