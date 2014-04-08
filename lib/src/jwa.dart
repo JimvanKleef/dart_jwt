@@ -1,6 +1,14 @@
-part of jwt;
+library jwt.jwa;
+ 
+import 'util.dart';
+import 'package:crypto/crypto.dart';
+import 'package:logging/logging.dart';
 
+Logger _log = new Logger("jwt.jwa");
 
+/**
+ * Represents a [JSON Web Algorithm](http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-25)
+ */
 abstract class JsonWebAlgorithm {
   final String name;
   
@@ -16,10 +24,6 @@ abstract class JsonWebAlgorithm {
   
   String toString() => '$name';
 
-  // TODO: This is not well thought out. Just cobbled together for now.
-  // Not sure whether it's a good idea to have the algorithms sign.
-  // Definitely should not take a JwsSignatureValidationContext. Maybe a JwaSigningContext
-  // if that makes sense
   List<int> sign(String signingInput, JwaSignatureContext validationContext) {
     /*
      * TODO: ugly. Because I'm base 64 decoding the signature from the request I need
@@ -34,7 +38,8 @@ abstract class JsonWebAlgorithm {
   List<int> _rawSign(String signingInput, JwaSignatureContext validationContext);
 }
 
-// TODO: no idea what this should really look like
+// TODO: This is very specific to what is needed for HS256. Will need to be
+// generalised for other algorithms
 class JwaSignatureContext {
   final String symmetricKey;
   JwaSignatureContext(this.symmetricKey);

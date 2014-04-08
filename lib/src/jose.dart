@@ -1,4 +1,9 @@
-part of jwt;
+library jwt.jose;
+ 
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+import 'util.dart';
+
 
 /**
  * Base class for objects defined in the Jose specs that are strings made up of
@@ -7,7 +12,7 @@ part of jwt;
  *  
  * At minimum they have a [header] and a [payload] as the first two segments.
  */
-abstract class _JoseObject<H extends _JoseHeader, P extends _JosePayload> {
+abstract class JoseObject<H extends JoseHeader, P extends JosePayload> {
   final H header;
   final P payload;
   Iterable<Base64EncodedData> get segments;
@@ -17,7 +22,7 @@ abstract class _JoseObject<H extends _JoseHeader, P extends _JosePayload> {
    */
   String encode() => encodeSegments(segments); 
   
-  _JoseObject(this.header, this.payload);
+  JoseObject(this.header, this.payload);
   
   static String encodeSegments(Iterable<Base64EncodedData> segments) => 
       segments.map((s) => s.encode()).join('.'); 
@@ -32,7 +37,13 @@ abstract class Base64EncodedData {
   Iterable<int> get decodedBytes;
   
   /// The base64 encoded form of the data
-  String encode() => _bytesToBase64(decodedBytes);
+  String encode() => bytesToBase64(decodedBytes);
+  
+  static Iterable<int> decodeToBytes(String base64String) 
+    => CryptoUtils.base64StringToBytes(padIfRequired(base64String));
+
+  static String decodeToString(String base64String) 
+    => new String.fromCharCodes(decodeToBytes(base64String));
 }
 
 /**
@@ -44,58 +55,21 @@ abstract class Base64EncodedJson extends Base64EncodedData {
   
   @override
   Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
+  
+  static Map decodeToJson(String base64String) 
+    => JSON.decode(Base64EncodedData.decodeToString(base64String));
+
 }
 
 /**
- * Base class for a [_JoseObject]'s header
+ * Base class for a [JoseObject]'s header
  */
-abstract class _JoseHeader extends Base64EncodedJson {  
+abstract class JoseHeader extends Base64EncodedJson {  
 }
 
 /**
- * Base class for a [_JoseObject]'s payload
+ * Base class for a [JoseObject]'s payload
  */
-abstract class _JosePayload extends Base64EncodedJson {  
+abstract class JosePayload extends Base64EncodedJson {  
 }
 
-String _bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) { 
-  return _unpadIfRequired(CryptoUtils.bytesToBase64(bytes, urlSafe: true), 
-        stringPadding: stringPadding);
-}
-
-Iterable<Iterable<int>> _decodeSegmentString(String base64EncodedSegmentString) =>
-    _decodeSegments(base64EncodedSegmentString.split('.'));
-
-
-Iterable<Iterable<int>> _decodeSegments(Iterable<String> segments) =>
-    segments.map((s) => CryptoUtils.base64StringToBytes(_padIfRequired(s)));
-  
-String _padIfRequired(String s) {
-  final int paddingAmount = s.length % 4;
-  return (paddingAmount > 0) ?
-    s.padRight(s.length + (4 - paddingAmount), '=') : s;
-}
-
-String _unpadIfRequired(String s, { bool stringPadding: true }) {
-  if (!stringPadding || !s.endsWith('=')) {
-    return s;
-  }
-  int cu = '='.codeUnits.first;
-  int i = s.length - 1;
-  for (; s.codeUnitAt(i) == cu; i--);
-  return s.substring(0, i + 1);
-}
-
-DateTime _decodeIntDate(int secondsSinceEpoch) => 
-    new DateTime.fromMillisecondsSinceEpoch(secondsSinceEpoch * 1000);
-
-int _encodeIntDate(DateTime dateTime) =>
-    dateTime.millisecondsSinceEpoch ~/ 1000;
-
-// TODO: dynamic until dart supports generics on functions
-dynamic checkNotNull(dynamic o, [String fieldName = "argument"]) {
-  if (o == null) 
-    throw new ArgumentError("$fieldName cannot be null");
-  
-  return o;
-}

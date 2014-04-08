@@ -1,54 +1,49 @@
-part of jwt;
+library jwt.jws;
+ 
+import 'jose.dart';
+import 'jwa.dart';
+import 'validation_constraint.dart';
+import 'dart:convert';
+import 'util.dart';
 
-typedef _JosePayload PayloadParser(Map json);
+typedef JosePayload PayloadParser(Map json);
 
-// TODO: no idea what this should really look like
-class JwsValidationContext {
-  final JwaSignatureContext signatureContext;
-
-  JwsValidationContext(this.signatureContext);
-}
-
-
-abstract class Jws<P extends _JosePayload> extends _JoseObject<JwsHeader, P> {
+/**
+ * Represents a [JSON Web Signature](http://tools.ietf.org/html/draft-ietf-jose-json-web-signature-24).
+ * 
+ * A Jws has a [header] that describes the [JsonWebAlgorithm] used to generate
+ * the [signature] 
+ */
+abstract class JsonWebSignature<P extends JosePayload> extends JoseObject<JwsHeader, P> {
   final JwsSignature signature;
-  final String signingInput;
+  final String _signingInput;
   
   Iterable<Base64EncodedData> get segments => [header, payload, signature];
 
 
-  Jws._internal(JwsHeader header, P payload, this.signature, this.signingInput)
+  JsonWebSignature(JwsHeader header, P payload, this.signature, this._signingInput)
       : super(header, payload);
 
-  //  Jws._internal2(JwsHeader header(), P payload(), JwsSignature signature()) : this(header(), payload());
-
-  //  Jws.parse(String jwsString, PayloadParser payloadParser)
-  //
-  //  {
-  //    final Iterable<Iterable<int>> decodedSegments = _decodeSegmentString(jwsString);
-  //    if (decodedSegments.length < 3)
-  //      throw new ArgumentError("JWS string must be in form Header.Payload.Signature.\n$jwsString\nis incalid");
-  //
-  //    Map toJson(int index) {
-  //      final String jsonStr = new String.fromCharCodes(decodedSegments.elementAt(index));
-  //      return JSON.decode(jsonStr);
-  //    }
-  //
-  //    final JwsHeader header = new JwsHeader.fromJson(toJson(0));
-  //    final P payload = payloadParser(toJson(1));
-  //    final JwsSignature signature = new JwsSignature.fromJson(toJson(2));
-  //    return new Jws._internal(header, payload, signature);
-  //  }
-
   Set<ConstraintViolation> validate(JwsValidationContext validationContext) {
-    // TODO: validate exp etc too
-    return signature.validate(signingInput, header.algorithm, 
-        validationContext.signatureContext);
+    return validateSignature(validationContext)
+        ..addAll(validatePayload(validationContext));
   }
+  
+  Set<ConstraintViolation> validateSignature(
+      JwsValidationContext validationContext) {
+    
+    return signature.validate(_signingInput, header.algorithm,
+              validationContext.signatureContext);
+  }
+  
+  Set<ConstraintViolation> validatePayload(
+      JwsValidationContext validationContext);
 
 }
 
-class JwsHeader extends _JoseHeader {
+/// A header for a [JsonWebSignature] defining the [type] of JWS object and
+/// [algorithm] used in the signature
+class JwsHeader extends JoseHeader {
   final JwsType type;
   final JsonWebAlgorithm algorithm;
 
@@ -57,6 +52,9 @@ class JwsHeader extends _JoseHeader {
 
   JwsHeader.fromJson(Map json): this(JwsType.lookup(json['typ']),
       JsonWebAlgorithm.lookup(json['alg']));
+
+  JwsHeader.decode(String base64String) :
+    this.fromJson(Base64EncodedJson.decodeToJson(base64String));
 
   Map toJson() {
     return {
@@ -71,9 +69,7 @@ class JwsHeader extends _JoseHeader {
   Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
 }
 
-//abstract class JwsPayload {
-//}
-
+/// Encapsulates the actual signature for a [JsonWebSignature]
 class JwsSignature extends Base64EncodedData {
   final List<int> signatureBytes;
 
@@ -82,6 +78,9 @@ class JwsSignature extends Base64EncodedData {
   JwsSignature.create(String signingInput, JsonWebAlgorithm
                algorithm, JwaSignatureContext signatureContext) 
       : signatureBytes = algorithm.sign(signingInput, signatureContext);
+
+  JwsSignature.decode(String base64String)
+      : this(Base64EncodedData.decodeToBytes(base64String));
   
   Set<ConstraintViolation> validate(String signingInput, JsonWebAlgorithm
       algorithm, JwaSignatureContext signatureContext) {
@@ -90,8 +89,8 @@ class JwsSignature extends Base64EncodedData {
     
     return _signaturesMatch(result) ? new Set.identity() : 
       (new Set()..add(new ConstraintViolation('signatures do not match. ' + 
-          'Received: ${_bytesToBase64(signatureBytes)} vs ' + 
-          'Calculated: ${_bytesToBase64(result)}')));
+          'Received: ${bytesToBase64(signatureBytes)} vs ' + 
+          'Calculated: ${bytesToBase64(result)}')));
   }
 
   bool _signaturesMatch(List<int> result) {
@@ -103,6 +102,7 @@ class JwsSignature extends Base64EncodedData {
   Iterable<int> get decodedBytes => signatureBytes;
 }
 
+/// The type of [JsonWebSignature] object
 class JwsType {
   final String name;
 
@@ -120,3 +120,11 @@ class JwsType {
 
   String toString() => '$name';
 }
+
+class JwsValidationContext {
+  final JwaSignatureContext signatureContext;
+
+  JwsValidationContext(this.signatureContext);
+}
+
+
