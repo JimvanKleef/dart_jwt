@@ -4,9 +4,10 @@ author: Anders Holmgren<aholmgren@atlassian.com>
 description: An implementation of [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19) standard
 homepage: https://bitbucket.org/aholmgren/dart-jwt
 environment:
-  sdk: '>=1.2.0'
+  sdk: '>=1.2.0 <1.4.0'
 dependencies:
-  crypto: any
-  logging: any
-  option: any
-  unittest: any
+  crypto: '>=0.9.0 <0.10.0'
+  logging: '>=0.9.1+1 <0.10.0'
+  option: '>=0.3.3 <0.4.0'
+dev_dependencies:
+  unittest: '>=0.10.0 <0.11.0'
