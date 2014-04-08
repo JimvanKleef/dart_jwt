@@ -1,6 +1,6 @@
 part of jwt;
 
-typedef _JosePayload PayloadParser(Map json);
+typedef JosePayload PayloadParser(Map json);
 
 // TODO: no idea what this should really look like
 class JwsValidationContext {
@@ -10,7 +10,7 @@ class JwsValidationContext {
 }
 
 
-abstract class Jws<P extends _JosePayload> extends _JoseObject<JwsHeader, P> {
+abstract class Jws<P extends JosePayload> extends JoseObject<JwsHeader, P> {
   final JwsSignature signature;
   final String signingInput;
   
@@ -20,26 +20,6 @@ abstract class Jws<P extends _JosePayload> extends _JoseObject<JwsHeader, P> {
   Jws._internal(JwsHeader header, P payload, this.signature, this.signingInput)
       : super(header, payload);
 
-  //  Jws._internal2(JwsHeader header(), P payload(), JwsSignature signature()) : this(header(), payload());
-
-  //  Jws.parse(String jwsString, PayloadParser payloadParser)
-  //
-  //  {
-  //    final Iterable<Iterable<int>> decodedSegments = _decodeSegmentString(jwsString);
-  //    if (decodedSegments.length < 3)
-  //      throw new ArgumentError("JWS string must be in form Header.Payload.Signature.\n$jwsString\nis incalid");
-  //
-  //    Map toJson(int index) {
-  //      final String jsonStr = new String.fromCharCodes(decodedSegments.elementAt(index));
-  //      return JSON.decode(jsonStr);
-  //    }
-  //
-  //    final JwsHeader header = new JwsHeader.fromJson(toJson(0));
-  //    final P payload = payloadParser(toJson(1));
-  //    final JwsSignature signature = new JwsSignature.fromJson(toJson(2));
-  //    return new Jws._internal(header, payload, signature);
-  //  }
-
   Set<ConstraintViolation> validate(JwsValidationContext validationContext) {
     // TODO: validate exp etc too
     return signature.validate(signingInput, header.algorithm, 
@@ -48,7 +28,7 @@ abstract class Jws<P extends _JosePayload> extends _JoseObject<JwsHeader, P> {
 
 }
 
-class JwsHeader extends _JoseHeader {
+class JwsHeader extends JoseHeader {
   final JwsType type;
   final JsonWebAlgorithm algorithm;
 
@@ -57,6 +37,9 @@ class JwsHeader extends _JoseHeader {
 
   JwsHeader.fromJson(Map json): this(JwsType.lookup(json['typ']),
       JsonWebAlgorithm.lookup(json['alg']));
+
+  JwsHeader.decode(String base64String) :
+    this.fromJson(Base64EncodedJson.decodeToJson(base64String));
 
   Map toJson() {
     return {
@@ -82,6 +65,9 @@ class JwsSignature extends Base64EncodedData {
   JwsSignature.create(String signingInput, JsonWebAlgorithm
                algorithm, JwaSignatureContext signatureContext) 
       : signatureBytes = algorithm.sign(signingInput, signatureContext);
+
+  JwsSignature.decode(String base64String)
+      : this(Base64EncodedData.decodeToBytes(base64String));
   
   Set<ConstraintViolation> validate(String signingInput, JsonWebAlgorithm
       algorithm, JwaSignatureContext signatureContext) {

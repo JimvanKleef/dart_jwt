@@ -38,10 +38,6 @@ class JwtValidationContext extends JwsValidationContext {
           new JwtClaimSetValidationContext());
 }
 
-//class MutableJwt implements Jwt {
-//  JwtClaimSet claimSet;
-//}
-
 class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
   T get claimSet => payload;
   
@@ -52,22 +48,22 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
   // TODO hard to factor out into JWS ctr but largely common across JWS impls
   factory _JwtInJws.decode(String jwtToken, JwsValidationContext validationContext, 
       ClaimSetParser claimSetParser) {
-    final Iterable<Iterable<int>> decodedSegments = _decodeSegmentString(jwtToken);
-    if (decodedSegments.length < 3)
-      throw new ArgumentError("JWS string must be in form Header.Payload.Signature.\n$jwtToken\nis invalid");
     
-    Map extractJson(int index) {
-      return JSON.decode(new String.fromCharCodes(decodedSegments.elementAt(index)));
-    }
+    final base64Segs = jwtToken.split('.');
+    if (base64Segs.length != 3)
+      throw new ArgumentError(
+          "JWS string must be in form Header.Payload.Signature.\n"
+          "$jwtToken\nis invalid");
     
-    final JwsHeader header = new JwsHeader.fromJson(extractJson(0));
-    if (header.type != JwsType.JWT) {
-      throw new ArgumentError('Unsupported Jws type ${header.type}');
-    }
-    final T claimSet = claimSetParser(extractJson(1));
-    final JwsSignature signature = new JwsSignature(decodedSegments.elementAt(2));
+    final header = new JwsHeader.decode(base64Segs.first);
+    final claimSet = claimSetParser(
+        Base64EncodedJson.decodeToJson(base64Segs.elementAt(1)));
+    final signature = new JwsSignature.decode(base64Segs.elementAt(2));
+    
     final signingInput = jwtToken.substring(0,jwtToken.lastIndexOf('.'));
+    
     final Jwt jwt = new _JwtInJws._internal(header, claimSet, signature, signingInput);
+    
     if (validationContext != null) {
       final Set<ConstraintViolation> violations = jwt.validate(validationContext);
       if (violations.isNotEmpty) {
@@ -83,7 +79,7 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
     
     // TODO: need to add support for diff algorithms
     final JwsHeader header = new JwsHeader(JwsType.JWT, JsonWebAlgorithm.HS256);
-    final String signingInput = _JoseObject.encodeSegments([header, claimSet]);
+    final String signingInput = JoseObject.encodeSegments([header, claimSet]);
 
     final JwsSignature signature = 
         new JwsSignature.create(signingInput, header.algorithm, signatureContext);
@@ -105,7 +101,7 @@ class JwtClaimSetValidationContext {
 }
 
 
-class JwtClaimSet extends _JosePayload with _JwtClaimSetMixin {
+class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   final String issuer;
   final String subject;
   final DateTime expiry;
@@ -121,7 +117,7 @@ class JwtClaimSet extends _JosePayload with _JwtClaimSetMixin {
 
 }
 
-class MutableJwtClaimSet extends _JosePayload with _JwtClaimSetMixin 
+class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin 
     implements JwtClaimSet {
   String issuer;
   String subject;
