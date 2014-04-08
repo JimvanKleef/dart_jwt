@@ -2,8 +2,8 @@ library jwt.jwa.test;
 
 
 import 'package:unittest/unittest.dart';
-import 'package:jwt/src/jws.dart';
-import 'package:jwt/src/jwa.dart';
+import 'package:dart_jwt/src/jws.dart';
+import 'package:dart_jwt/src/jwa.dart';
 
 void main()  {
   group('[HS256]', () {
