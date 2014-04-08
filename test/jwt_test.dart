@@ -56,12 +56,12 @@ void main()  {
         'hMzA2ZGI4OWZhNTdkZDE2MzU3NDY2NzQzNmRkNzIwZDVkOWM1Mjc5YzViNDVmN2E4Iiwia'
         'WF0IjoxMzk0MTY2MTg3fQ.bR8Z0MIguOg6xgHiav0quun8kTqXzNUKMKym-PFjZvc';
 
-    final claimSet = new MutableJwtClaimSet()
+    final claimSet = (new MutableJwtClaimSet()
       ..issuer=issuer
       ..subject=subject
       ..expiry=expiry
-      ..issuedAt=issuedAt
-      ..toImmutable();
+      ..issuedAt=issuedAt)
+      .toImmutable();
     
     JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
