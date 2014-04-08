@@ -1,4 +1,8 @@
-part of jwt;
+library jwt.jose;
+ 
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+
 
 /**
  * Base class for objects defined in the Jose specs that are strings made up of
@@ -32,7 +36,7 @@ abstract class Base64EncodedData {
   Iterable<int> get decodedBytes;
   
   /// The base64 encoded form of the data
-  String encode() => _bytesToBase64(decodedBytes);
+  String encode() => bytesToBase64(decodedBytes);
   
   static Iterable<int> decodeToBytes(String base64String) 
     => CryptoUtils.base64StringToBytes(_padIfRequired(base64String));
@@ -68,7 +72,7 @@ abstract class JoseHeader extends Base64EncodedJson {
 abstract class JosePayload extends Base64EncodedJson {  
 }
 
-String _bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) { 
+String bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) { 
   return _unpadIfRequired(CryptoUtils.bytesToBase64(bytes, urlSafe: true), 
         stringPadding: stringPadding);
 }
@@ -89,10 +93,10 @@ String _unpadIfRequired(String s, { bool stringPadding: true }) {
   return s.substring(0, i + 1);
 }
 
-DateTime _decodeIntDate(int secondsSinceEpoch) => 
+DateTime decodeIntDate(int secondsSinceEpoch) => 
     new DateTime.fromMillisecondsSinceEpoch(secondsSinceEpoch * 1000);
 
-int _encodeIntDate(DateTime dateTime) =>
+int encodeIntDate(DateTime dateTime) =>
     dateTime.millisecondsSinceEpoch ~/ 1000;
 
 // TODO: dynamic until dart supports generics on functions

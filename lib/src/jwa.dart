@@ -1,5 +1,10 @@
-part of jwt;
+library jwt.jwa;
+ 
+import 'jose.dart';
+import 'package:crypto/crypto.dart';
+import 'package:logging/logging.dart';
 
+Logger _log = new Logger("jwt.jwa");
 
 abstract class JsonWebAlgorithm {
   final String name;

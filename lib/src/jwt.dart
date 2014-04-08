@@ -1,4 +1,9 @@
-part of jwt;
+library jwt.jwt;
+
+import 'jose.dart';
+import 'jwa.dart';
+import 'jws.dart';
+import 'validation_constraint.dart';
 
 typedef JwtClaimSet ClaimSetParser(Map json);
 
@@ -43,7 +48,7 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
   
   _JwtInJws._internal(JwsHeader header, T claimSet, JwsSignature signature, 
       String signingInput) 
-    : super._internal(header, claimSet, signature, signingInput);
+    : super(header, claimSet, signature, signingInput);
 
   // TODO hard to factor out into JWS ctr but largely common across JWS impls
   factory _JwtInJws.decode(String jwtToken, JwsValidationContext validationContext, 
@@ -62,7 +67,8 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
     
     final signingInput = jwtToken.substring(0,jwtToken.lastIndexOf('.'));
     
-    final Jwt jwt = new _JwtInJws._internal(header, claimSet, signature, signingInput);
+    final Jwt jwt = new _JwtInJws._internal(header, claimSet, signature, 
+        signingInput);
     
     if (validationContext != null) {
       final Set<ConstraintViolation> violations = jwt.validate(validationContext);
@@ -89,7 +95,8 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
 
   Set<ConstraintViolation> validate(JwtValidationContext validationContext) {
     final violations = super.validate(validationContext);
-    return violations..addAll(claimSet.validate(validationContext.claimSetValidationContext));
+    return violations..addAll(
+        claimSet.validate(validationContext.claimSetValidationContext));
   }
 }
 
@@ -112,8 +119,8 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
-        expiry = _decodeIntDate(json['exp']),
-        issuedAt = _decodeIntDate(json['iat']);
+        expiry = decodeIntDate(json['exp']),
+        issuedAt = decodeIntDate(json['iat']);
 
 }
 
@@ -137,8 +144,8 @@ abstract class _JwtClaimSetMixin  {
 
   Map toJson() {
     return {
-      'iat' : _encodeIntDate(issuedAt),
-      'exp' : _encodeIntDate(expiry),
+      'iat' : encodeIntDate(issuedAt),
+      'exp' : encodeIntDate(expiry),
       'iss' : issuer,
       'sub' : subject
     };
@@ -151,12 +158,10 @@ abstract class _JwtClaimSetMixin  {
     final diff = now.difference(expiry);
     if (diff > validationContext.expiryTolerance) {
       return new Set()..add(new ConstraintViolation(
-          'JWT expired. Expiry ($expiry) is more than tolerance (${validationContext.expiryTolerance}) before now ($now)'));
+          'JWT expired. Expiry ($expiry) is more than tolerance '
+          '(${validationContext.expiryTolerance}) before now ($now)'));
     }
     
     return new Set.identity();
-    
-    // TODO: could support issuer and subject validation (by passing in lookup functions in context)
-    // but may leave that to clients 
   }
 }

@@ -1,4 +1,9 @@
-part of jwt;
+library jwt.jws;
+ 
+import 'jose.dart';
+import 'jwa.dart';
+import 'validation_constraint.dart';
+import 'dart:convert';
 
 typedef JosePayload PayloadParser(Map json);
 
@@ -17,7 +22,7 @@ abstract class Jws<P extends JosePayload> extends JoseObject<JwsHeader, P> {
   Iterable<Base64EncodedData> get segments => [header, payload, signature];
 
 
-  Jws._internal(JwsHeader header, P payload, this.signature, this.signingInput)
+  Jws(JwsHeader header, P payload, this.signature, this.signingInput)
       : super(header, payload);
 
   Set<ConstraintViolation> validate(JwsValidationContext validationContext) {
@@ -76,8 +81,8 @@ class JwsSignature extends Base64EncodedData {
     
     return _signaturesMatch(result) ? new Set.identity() : 
       (new Set()..add(new ConstraintViolation('signatures do not match. ' + 
-          'Received: ${_bytesToBase64(signatureBytes)} vs ' + 
-          'Calculated: ${_bytesToBase64(result)}')));
+          'Received: ${bytesToBase64(signatureBytes)} vs ' + 
+          'Calculated: ${bytesToBase64(result)}')));
   }
 
   bool _signaturesMatch(List<int> result) {
