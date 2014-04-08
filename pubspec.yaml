@@ -1,5 +1,10 @@
 name: jwt
-description: A sample command-line application
+version: 0.1.0
+author: Anders Holmgren<aholmgren@atlassian.com>
+description: An implementation of [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19) standard
+homepage: https://bitbucket.org/aholmgren/dart-jwt
+environment:
+  sdk: '>=1.2.0'
 dependencies:
   crypto: any
   logging: any
