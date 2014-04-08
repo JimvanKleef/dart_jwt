@@ -4,6 +4,7 @@ import 'jose.dart';
 import 'jwa.dart';
 import 'jws.dart';
 import 'validation_constraint.dart';
+import 'util.dart';
 
 typedef JwtClaimSet ClaimSetParser(Map json);
 
@@ -93,11 +94,10 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
     return new _JwtInJws._internal(header, claimSet, signature, signingInput);
   }
 
-  Set<ConstraintViolation> validate(JwtValidationContext validationContext) {
-    final violations = super.validate(validationContext);
-    return violations..addAll(
-        claimSet.validate(validationContext.claimSetValidationContext));
-  }
+  @override
+  Set<ConstraintViolation> validatePayload(JwtValidationContext validationContext) =>
+    claimSet.validate(validationContext.claimSetValidationContext);
+  
 }
 
 class JwtClaimSetValidationContext {

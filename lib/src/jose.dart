@@ -2,6 +2,7 @@ library jwt.jose;
  
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'util.dart';
 
 
 /**
@@ -39,7 +40,7 @@ abstract class Base64EncodedData {
   String encode() => bytesToBase64(decodedBytes);
   
   static Iterable<int> decodeToBytes(String base64String) 
-    => CryptoUtils.base64StringToBytes(_padIfRequired(base64String));
+    => CryptoUtils.base64StringToBytes(padIfRequired(base64String));
 
   static String decodeToString(String base64String) 
     => new String.fromCharCodes(decodeToBytes(base64String));
@@ -72,37 +73,3 @@ abstract class JoseHeader extends Base64EncodedJson {
 abstract class JosePayload extends Base64EncodedJson {  
 }
 
-String bytesToBase64(Iterable<int> bytes, { bool stringPadding: true }) { 
-  return _unpadIfRequired(CryptoUtils.bytesToBase64(bytes, urlSafe: true), 
-        stringPadding: stringPadding);
-}
-
-String _padIfRequired(String s) {
-  final int paddingAmount = s.length % 4;
-  return (paddingAmount > 0) ?
-    s.padRight(s.length + (4 - paddingAmount), '=') : s;
-}
-
-String _unpadIfRequired(String s, { bool stringPadding: true }) {
-  if (!stringPadding || !s.endsWith('=')) {
-    return s;
-  }
-  int cu = '='.codeUnits.first;
-  int i = s.length - 1;
-  for (; s.codeUnitAt(i) == cu; i--);
-  return s.substring(0, i + 1);
-}
-
-DateTime decodeIntDate(int secondsSinceEpoch) => 
-    new DateTime.fromMillisecondsSinceEpoch(secondsSinceEpoch * 1000);
-
-int encodeIntDate(DateTime dateTime) =>
-    dateTime.millisecondsSinceEpoch ~/ 1000;
-
-// TODO: dynamic until dart supports generics on functions
-dynamic checkNotNull(dynamic o, [String fieldName = "argument"]) {
-  if (o == null) 
-    throw new ArgumentError("$fieldName cannot be null");
-  
-  return o;
-}

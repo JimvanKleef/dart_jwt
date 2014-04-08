@@ -4,32 +4,46 @@ import 'jose.dart';
 import 'jwa.dart';
 import 'validation_constraint.dart';
 import 'dart:convert';
+import 'util.dart';
 
 typedef JosePayload PayloadParser(Map json);
 
-// TODO: no idea what this should really look like
 class JwsValidationContext {
   final JwaSignatureContext signatureContext;
 
   JwsValidationContext(this.signatureContext);
 }
 
-
+/**
+ * Represents a [JSON Web Signature](http://tools.ietf.org/html/draft-ietf-jose-json-web-signature-24).
+ * 
+ * A Jws has a [header] that describes the [JsonWebAlgorithm] used to generate
+ * the [signature] 
+ */
 abstract class Jws<P extends JosePayload> extends JoseObject<JwsHeader, P> {
   final JwsSignature signature;
-  final String signingInput;
+  final String _signingInput;
   
   Iterable<Base64EncodedData> get segments => [header, payload, signature];
 
 
-  Jws(JwsHeader header, P payload, this.signature, this.signingInput)
+  Jws(JwsHeader header, P payload, this.signature, this._signingInput)
       : super(header, payload);
 
   Set<ConstraintViolation> validate(JwsValidationContext validationContext) {
-    // TODO: validate exp etc too
-    return signature.validate(signingInput, header.algorithm, 
-        validationContext.signatureContext);
+    return validateSignature(validationContext)
+        ..addAll(validatePayload(validationContext));
   }
+  
+  Set<ConstraintViolation> validateSignature(
+      JwsValidationContext validationContext) {
+    
+    return signature.validate(_signingInput, header.algorithm,
+              validationContext.signatureContext);
+  }
+  
+  Set<ConstraintViolation> validatePayload(
+      JwsValidationContext validationContext);
 
 }
 
@@ -58,9 +72,6 @@ class JwsHeader extends JoseHeader {
   @override
   Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
 }
-
-//abstract class JwsPayload {
-//}
 
 class JwsSignature extends Base64EncodedData {
   final List<int> signatureBytes;
