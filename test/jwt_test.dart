@@ -24,7 +24,7 @@ void main()  {
 
   group('[decode]', () {
 
-    Jwt jwt() => new Jwt.decode(jwtStr);
+    JsonWebToken jwt() => new JsonWebToken.decode(jwtStr);
     JwtClaimSet claimSet() => jwt().claimSet;
     
     group('[claimset]', () {
@@ -63,9 +63,9 @@ void main()  {
       ..issuedAt=issuedAt
       ..toImmutable();
     
-    Jwt jwt() => new Jwt.jws(claimSet, signatureContext);
+    JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
-    Jwt parseEncoded() => new Jwt.decode(encode(), 
+    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(), 
         validationContext: validationContext);
     JwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
     

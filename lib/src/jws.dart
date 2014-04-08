@@ -20,14 +20,14 @@ class JwsValidationContext {
  * A Jws has a [header] that describes the [JsonWebAlgorithm] used to generate
  * the [signature] 
  */
-abstract class Jws<P extends JosePayload> extends JoseObject<JwsHeader, P> {
+abstract class JsonWebSignature<P extends JosePayload> extends JoseObject<JwsHeader, P> {
   final JwsSignature signature;
   final String _signingInput;
   
   Iterable<Base64EncodedData> get segments => [header, payload, signature];
 
 
-  Jws(JwsHeader header, P payload, this.signature, this._signingInput)
+  JsonWebSignature(JwsHeader header, P payload, this.signature, this._signingInput)
       : super(header, payload);
 
   Set<ConstraintViolation> validate(JwsValidationContext validationContext) {

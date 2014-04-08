@@ -10,17 +10,20 @@ typedef JwtClaimSet ClaimSetParser(Map json);
 
 JwtClaimSet _defaultClaimSetParser(Map json) => new JwtClaimSet.fromJson(json);
 
-abstract class Jwt<T extends JwtClaimSet> {
+/**
+ * Represents a [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19)
+ */
+abstract class JsonWebToken<T extends JwtClaimSet> {
   T get claimSet;
   
-  factory Jwt.decode(String jwtToken, 
+  factory JsonWebToken.decode(String jwtToken, 
       { JwsValidationContext validationContext, 
         ClaimSetParser claimSetParser: _defaultClaimSetParser }) {
     // TODO: figure out if the jwt is in a jws or jwe structure. Assuming jws for now
     return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
   }
   
-  factory Jwt.jws(T claimSet, JwaSignatureContext signatureContext) {
+  factory JsonWebToken.jws(T claimSet, JwaSignatureContext signatureContext) {
     return new _JwtInJws(claimSet, signatureContext);
   }
   
@@ -44,7 +47,7 @@ class JwtValidationContext extends JwsValidationContext {
           new JwtClaimSetValidationContext());
 }
 
-class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
+class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T> implements JsonWebToken {
   T get claimSet => payload;
   
   _JwtInJws._internal(JwsHeader header, T claimSet, JwsSignature signature, 
@@ -68,7 +71,7 @@ class _JwtInJws<T extends JwtClaimSet> extends Jws<T> implements Jwt {
     
     final signingInput = jwtToken.substring(0,jwtToken.lastIndexOf('.'));
     
-    final Jwt jwt = new _JwtInJws._internal(header, claimSet, signature, 
+    final JsonWebToken jwt = new _JwtInJws._internal(header, claimSet, signature, 
         signingInput);
     
     if (validationContext != null) {
