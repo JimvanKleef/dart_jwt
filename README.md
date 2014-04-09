@@ -92,14 +92,14 @@ The main way to extend the Jwt library is to add custom claims to the claimset. 
 Basically you need to extend JwtClaimSet, add your fields, the to / from json and validation.
 
 ```
-class AcJwtClaimSet extends JwtClaimSet {
+class ProductHostClaimSet extends JwtClaimSet {
   final String queryStringHash;
   
-  AcJwtClaimSet(String issuer, String subject, DateTime expiry, DateTime issuedAt, 
+  ProductHostClaimSet(String issuer, String subject, DateTime expiry, DateTime issuedAt,
       this.queryStringHash) 
     : super(issuer, subject, expiry, issuedAt);
   
-  AcJwtClaimSet.fromJson(Map json)
+  ProductHostClaimSet.fromJson(Map json)
       : queryStringHash = json['qsh'],
         super.fromJson(json);
 
@@ -110,12 +110,12 @@ class AcJwtClaimSet extends JwtClaimSet {
   }
   
   @override
-  Set<ConstraintViolation> validate(AcJwtClaimSetValidationContext validationContext) {
+  Set<ConstraintViolation> validate(ProductHostClaimSetValidationContext validationContext) {
     return super.validate(validationContext)
     	..addAll(_validateQsh(validationContext));
   }
   
-  Set<ConstraintViolation> _validateQsh(AcJwtClaimSetValidationContext validationContext) {
+  Set<ConstraintViolation> _validateQsh(ProductHostClaimSetValidationContext validationContext) {
     final String expectedQsh = validationContext.qshFactory();
     return queryStringHash == expectedQsh ? new Set.identity() 
         : (new Set()..add(new ConstraintViolation(
