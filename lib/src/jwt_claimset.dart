@@ -6,17 +6,19 @@ import 'util.dart';
 
 class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   final String issuer;
+  final String audience;
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
   
-  JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt);
+  JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
   
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
         expiry = decodeIntDate(json['exp']),
-        issuedAt = decodeIntDate(json['iat']);
+        issuedAt = decodeIntDate(json['iat']),
+        audience = json['aud'];
 
 }
 
@@ -24,11 +26,12 @@ class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
     implements JwtClaimSet {
   String issuer;
   String subject;
+  String audience;
   DateTime expiry;
   DateTime issuedAt;
 
   JwtClaimSet toImmutable() => 
-      new JwtClaimSet(issuer, subject, expiry, issuedAt);
+      new JwtClaimSet(issuer, subject, expiry, issuedAt, audience);
 }
 
 class JwtClaimSetValidationContext {
@@ -41,6 +44,7 @@ class JwtClaimSetValidationContext {
 abstract class _JwtClaimSetMixin  {
   String get issuer;
   String get subject;
+  String get audience;
   DateTime get expiry;
   DateTime get issuedAt;
 
@@ -49,7 +53,8 @@ abstract class _JwtClaimSetMixin  {
       'iat' : encodeIntDate(issuedAt),
       'exp' : encodeIntDate(expiry),
       'iss' : issuer,
-      'sub' : subject
+      'sub' : subject,
+      'aud' : audience
     };
   }
   

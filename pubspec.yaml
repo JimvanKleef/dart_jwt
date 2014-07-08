@@ -1,10 +1,10 @@
 name: dart_jwt
-version: 0.1.0
+version: 0.1.1
 author: Anders Holmgren<aholmgren@atlassian.com>
 description: An implementation of [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19) standard
 homepage: https://bitbucket.org/aholmgren/dart-jwt
 environment:
-  sdk: '>=1.2.0 <1.4.0'
+  sdk: '>=1.3.0 <2.0.0'
 dependencies:
   crypto: '>=0.9.0 <0.10.0'
   logging: '>=0.9.1+1 <0.10.0'
