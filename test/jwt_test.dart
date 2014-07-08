@@ -8,6 +8,7 @@ import 'package:dart_jwt/src/validation_constraint.dart';
 void main()  {
   final String sharedSecret = '3ab90b11-d7bd-4097-958f-01b7ac4e985f';
   final String issuer = 'jira:ae390d29-31b2-4c12-a719-9df64e3e92b7';
+  final String audience = 'foobar';
   final String subject = 'admin';
   final DateTime expiry = DateTime.parse('2014-03-07 15:26:07.000');
   final DateTime issuedAt = DateTime.parse('2014-03-07 15:23:07.000');
@@ -50,15 +51,10 @@ void main()  {
   });
   
   group('[encode]', () {
-    final String jwtStr = r'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
-        'eyJleHAiOjEzOTQxNjYzNjcsInN1YiI6ImFkbWluIiwiaXNzIjoiamlyYTphZTM5MGQyO'
-        'S0zMWIyLTRjMTItYTcxOS05ZGY2NGUzZTkyYjciLCJxc2giOiJlYjRlYzVmMDk4MGQwMWR'
-        'hMzA2ZGI4OWZhNTdkZDE2MzU3NDY2NzQzNmRkNzIwZDVkOWM1Mjc5YzViNDVmN2E4Iiwia'
-        'WF0IjoxMzk0MTY2MTg3fQ.bR8Z0MIguOg6xgHiav0quun8kTqXzNUKMKym-PFjZvc';
-
     final claimSet = (new MutableJwtClaimSet()
       ..issuer=issuer
       ..subject=subject
+      ..audience=audience
       ..expiry=expiry
       ..issuedAt=issuedAt)
       .toImmutable();
@@ -73,6 +69,9 @@ void main()  {
     group('[roundtrip]', () {
       test('issuer matches', () {
         expect(roundtripClaimSet().issuer, equals(issuer));
+      });
+      test('audience matches', () {
+        expect(roundtripClaimSet().audience, equals(audience));
       });
       test('subject matches', () {
         expect(roundtripClaimSet().subject, equals(subject));
