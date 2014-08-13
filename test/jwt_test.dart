@@ -10,8 +10,8 @@ void main()  {
   final String issuer = 'jira:ae390d29-31b2-4c12-a719-9df64e3e92b7';
   final String audience = 'foobar';
   final String subject = 'admin';
-  final DateTime expiry = DateTime.parse('2014-03-07 15:26:07.000');
-  final DateTime issuedAt = DateTime.parse('2014-03-07 15:23:07.000');
+  final DateTime expiry = DateTime.parse('2014-03-07 15:26:07.000+11:00').toUtc();
+  final DateTime issuedAt = DateTime.parse('2014-03-07 15:23:07.000+11:00').toUtc();
   final JwaSignatureContext signatureContext = new JwaSignatureContext(sharedSecret);
   final claimSetValidationContext = new JwtClaimSetValidationContext(
       expiryTolerance: const Duration(days: 365*1000));
@@ -36,10 +36,10 @@ void main()  {
         expect(claimSet().subject, equals(subject));
       });
       test('expiry parses', () {
-        expect(claimSet().expiry, equals(expiry));
+        expect(claimSet().expiry.toUtc(), equals(expiry));
       });
       test('issuedAt parses', () {
-        expect(claimSet().issuedAt, equals(issuedAt));
+        expect(claimSet().issuedAt.toUtc(), equals(issuedAt));
       });
     });
     group('[signature]', () {
@@ -77,10 +77,10 @@ void main()  {
         expect(roundtripClaimSet().subject, equals(subject));
       });
       test('expiry matches', () {
-        expect(roundtripClaimSet().expiry, equals(expiry));
+        expect(roundtripClaimSet().expiry.toUtc(), equals(expiry));
       });
       test('issuedAt matches', () {
-        expect(roundtripClaimSet().issuedAt, equals(issuedAt));
+        expect(roundtripClaimSet().issuedAt.toUtc(), equals(issuedAt));
       });
     });
   });
