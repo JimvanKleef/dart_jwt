@@ -115,6 +115,7 @@ class JwsType {
   static const JwsType JWT = const JwsType._internal('JWT');
 
   static Map<String, JwsType> _supportedTypes = {
+    null: JWT,
     'JWT': JWT
   };
 
