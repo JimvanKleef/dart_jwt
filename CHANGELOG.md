@@ -1,3 +1,7 @@
+## 0.1.2
+
+* make typ header optional and default to JWT
+
 ## 0.1.1
 
 * Add audience claim
