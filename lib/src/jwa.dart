@@ -21,9 +21,13 @@ abstract class JsonWebAlgorithm {
   }
   
   static const JsonWebAlgorithm HS256 = const _HS256JsonWebAlgorithm();
-  
-  static Map<String, JsonWebAlgorithm> _supportedAlgorithms = { 'HS256' : HS256 };
-  
+  static const JsonWebAlgorithm RS256 = const _RS256JsonWebAlgorithm();
+
+  static Map<String, JsonWebAlgorithm> _supportedAlgorithms = {
+    'HS256' : HS256,
+    'RS256' : RS256
+  };
+
   String toString() => '$name';
 
   List<int> sign(String signingInput, JwaSignatureContext validationContext) {
