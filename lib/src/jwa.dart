@@ -3,6 +3,8 @@ library jwt.jwa;
 import 'util.dart';
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
+import 'package:googleapis_auth/src/crypto/rsa_sign.dart';
+import 'package:googleapis_auth/src/crypto/rsa.dart';
 
 Logger _log = new Logger("jwt.jwa");
 
@@ -19,9 +21,13 @@ abstract class JsonWebAlgorithm {
   }
   
   static const JsonWebAlgorithm HS256 = const _HS256JsonWebAlgorithm();
-  
-  static Map<String, JsonWebAlgorithm> _supportedAlgorithms = { 'HS256' : HS256 };
-  
+  static const JsonWebAlgorithm RS256 = const _RS256JsonWebAlgorithm();
+
+  static Map<String, JsonWebAlgorithm> _supportedAlgorithms = {
+    'HS256' : HS256,
+    'RS256' : RS256
+  };
+
   String toString() => '$name';
 
   List<int> sign(String signingInput, JwaSignatureContext validationContext) {
@@ -42,7 +48,8 @@ abstract class JsonWebAlgorithm {
 // generalised for other algorithms
 class JwaSignatureContext {
   final String symmetricKey;
-  JwaSignatureContext(this.symmetricKey);
+  final RSAPrivateKey rsaKey;
+  JwaSignatureContext(this.symmetricKey, {this.rsaKey});
 }
 
 
@@ -57,5 +64,15 @@ class _HS256JsonWebAlgorithm extends JsonWebAlgorithm {
     final hmac = new HMAC(new SHA256(), signatureContext.symmetricKey.codeUnits);
     hmac.add(signingInput.codeUnits);
     return hmac.digest;
+  }
+}
+
+class _RS256JsonWebAlgorithm extends JsonWebAlgorithm {
+  const _RS256JsonWebAlgorithm() : super._internal('RS256');
+
+  @override
+  List<int> _rawSign(String signingInput, JwaSignatureContext signatureContext) {
+    final signer = new RS256Signer(signatureContext.rsaKey);
+    return signer.sign(signingInput.codeUnits);
   }
 }
