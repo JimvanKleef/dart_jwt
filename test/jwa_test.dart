@@ -32,6 +32,15 @@ void main()  {
                   'bd630768-3f4c-49c7-a414-4f44b4ec021b'), 
                   equals('NDrBMAzry_r-VRFM2r0hVaKAQdFtlTht_Qs4Mn5l0MI'));
     });
+    test('case 3 bitbucket', () {
+      expect(sign('eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.'
+                  'eyJpc3MiOiAiY29ubmVjdGlvbjoxNjYiLCAiaWF0IjogMTQxMDkwNTA0Miwg'
+                  'InFzaCI6ICI4Y2VmMTcyNDM5ZWM2Y2ZhNGZlOGM1OGZiZTZkNDU0ODgzOGRh'
+                  'YjkwODFjYWM0YzhhNmIzZTNkNjUzNDlmMzg3IiwgImF1ZCI6ICJjb25uZWN0'
+                  'aW9uOjE2NiIsICJleHAiOiAxNDE0NTA1MDQyfQ',                  
+                  '3dab1f24-72c6-4d74-ab19-1f254313a19b'), 
+                  equals('YFYWzvqUBugYopOdefxqKpdw_zws55A8HFINovpNA14'));
+    });
   });
 
   // Generate pub/private RSA key:
