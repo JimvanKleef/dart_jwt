@@ -1,5 +1,5 @@
 library jwt.jws;
- 
+
 import 'jose.dart';
 import 'jwa.dart';
 import 'validation_constraint.dart';
@@ -10,14 +10,14 @@ typedef JosePayload PayloadParser(Map json);
 
 /**
  * Represents a [JSON Web Signature](http://tools.ietf.org/html/draft-ietf-jose-json-web-signature-24).
- * 
+ *
  * A Jws has a [header] that describes the [JsonWebAlgorithm] used to generate
- * the [signature] 
+ * the [signature]
  */
 abstract class JsonWebSignature<P extends JosePayload> extends JoseObject<JwsHeader, P> {
   final JwsSignature signature;
   final String _signingInput;
-  
+
   Iterable<Base64EncodedData> get segments => [header, payload, signature];
 
 
@@ -28,14 +28,14 @@ abstract class JsonWebSignature<P extends JosePayload> extends JoseObject<JwsHea
     return validateSignature(validationContext)
         ..addAll(validatePayload(validationContext));
   }
-  
+
   Set<ConstraintViolation> validateSignature(
       JwsValidationContext validationContext) {
-    
+
     return signature.validate(_signingInput, header.algorithm,
               validationContext.signatureContext);
   }
-  
+
   Set<ConstraintViolation> validatePayload(
       JwsValidationContext validationContext);
 
@@ -76,20 +76,20 @@ class JwsSignature extends Base64EncodedData {
   JwsSignature(this.signatureBytes);
 
   JwsSignature.create(String signingInput, JsonWebAlgorithm
-               algorithm, JwaSignatureContext signatureContext) 
+               algorithm, JwaSignatureContext signatureContext)
       : signatureBytes = algorithm.sign(signingInput, signatureContext);
 
   JwsSignature.decode(String base64String)
       : this(Base64EncodedData.decodeToBytes(base64String));
-  
+
   Set<ConstraintViolation> validate(String signingInput, JsonWebAlgorithm
       algorithm, JwaSignatureContext signatureContext) {
 
     List<int> result = algorithm.sign(signingInput, signatureContext);
-    
-    return _signaturesMatch(result) ? new Set.identity() : 
-      (new Set()..add(new ConstraintViolation('signatures do not match. ' + 
-          'Received: ${bytesToBase64(signatureBytes)} vs ' + 
+
+    return _signaturesMatch(result) ? new Set.identity() :
+      (new Set()..add(new ConstraintViolation('signatures do not match. ' +
+          'Received: ${bytesToBase64(signatureBytes)} vs ' +
           'Calculated: ${bytesToBase64(result)}')));
   }
 
@@ -116,6 +116,7 @@ class JwsType {
 
   static Map<String, JwsType> _supportedTypes = {
     null: JWT,
+    'jwt': JWT, // some OIDC providers use lowercase
     'JWT': JWT
   };
 
