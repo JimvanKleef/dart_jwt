@@ -10,9 +10,10 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
-  
+
   JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
-  
+  JwtClaimSet.build({ this.issuer, this.subject, this.expiry, this.issuedAt, this.audience });
+
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
@@ -22,7 +23,8 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
 
 }
 
-class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin 
+@deprecated
+class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
     implements JwtClaimSet {
   String issuer;
   String subject;
@@ -30,14 +32,14 @@ class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
   DateTime expiry;
   DateTime issuedAt;
 
-  JwtClaimSet toImmutable() => 
+  JwtClaimSet toImmutable() =>
       new JwtClaimSet(issuer, subject, expiry, issuedAt, audience);
 }
 
 class JwtClaimSetValidationContext {
   final Duration expiryTolerance;
-  
-  const JwtClaimSetValidationContext( 
+
+  const JwtClaimSetValidationContext(
       { this.expiryTolerance: const Duration(seconds: 30) } );
 }
 
@@ -57,9 +59,9 @@ abstract class _JwtClaimSetMixin  {
       'aud' : audience
     };
   }
-  
+
   String toString() => 'JwtClaimSet[issuer=$issuer]';
-    
+
   Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
     final now = new DateTime.now();
     final diff = now.difference(expiry);
@@ -68,7 +70,7 @@ abstract class _JwtClaimSetMixin  {
           'JWT expired. Expiry ($expiry) is more than tolerance '
           '(${validationContext.expiryTolerance}) before now ($now)'));
     }
-    
+
     return new Set.identity();
   }
 }
