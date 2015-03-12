@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'util.dart';
 import 'package:crypto/crypto.dart';
 import 'package:cipher/cipher.dart';
+import 'package:cipher/impl/base.dart';
 import 'package:logging/logging.dart';
 import 'validation_constraint.dart';
 
@@ -32,6 +33,8 @@ abstract class JsonWebAlgorithm {
   String toString() => '$name';
 
   List<int> sign(String signingInput, JwaSignatureContext signatureContext) {
+    initCipher();
+
     /*
      * TODO: ugly. Because I'm base 64 decoding the signature from the request I need
      * to reencode here. Better to avoid the decode in the first place 
@@ -43,6 +46,7 @@ abstract class JsonWebAlgorithm {
   }
 
   Set<ConstraintViolation> validateSignature(String signingInput, List<int> signatureBytes, JwaSignatureContext signatureContext) {
+    initCipher();
     return _internalValidateSignature(signingInput, signatureBytes, signatureContext);
   }
 
@@ -113,7 +117,7 @@ class _RS256JsonWebAlgorithm extends JsonWebAlgorithm {
     var publicParams = new PublicKeyParameter(signatureContext.rsaPublicKey);
     var signParams = new ParametersWithRandom(publicParams, new SecureRandom("AES/CTR/PRNG"));
     var signer = new Signer("SHA-256/RSA")..init(false, signParams);
-    var rsaSignature = new RSASignature(signatureBytes);
+    var rsaSignature = new RSASignature(new Uint8List.fromList(signatureBytes));
     var ok = signer.verifySignature(new Uint8List.fromList(signingInput.codeUnits), rsaSignature);
     return ok ? new Set.identity() : (new Set()..add(new ConstraintViolation('RSA signature failed validation.')));
   }

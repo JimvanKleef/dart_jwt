@@ -2,18 +2,14 @@ library jwt.jwa.test;
 
 import 'dart:typed_data';
 import 'package:unittest/unittest.dart';
+import 'package:bignum/bignum.dart';
+import 'package:crypto/crypto.dart';
+import 'package:cipher/cipher.dart';
+import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_jwt/src/jws.dart';
 import 'package:dart_jwt/src/jwa.dart';
-import 'package:cipher/cipher.dart';
-import 'package:crypto/crypto.dart';
-import 'package:asn1lib/asn1lib.dart';
-import 'package:cipher/impl/server.dart';
-import 'package:bignum/bignum.dart';
 
 void main() {
-
-  // TODO: Maybe there is a better place to call initCipher()
-  initCipher();
 
   group('[HS256]', () {
     String sign(String signingInput, String sharedSecret) {
