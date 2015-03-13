@@ -88,8 +88,14 @@ class _HS256JsonWebAlgorithm extends JsonWebAlgorithm {
   }
 
   bool _signaturesMatch(List<int> result, List<int> signatureBytes) {
-    return signatureBytes.length == result.length && new List.generate(
-        signatureBytes.length, (i) => i).every((i) => signatureBytes[i] == result[i]);
+    if(signatureBytes.length != result.length)
+      return false;
+
+    var r = 0;
+    for(int i = 0; i < signatureBytes.length; i++) {
+      r |= signatureBytes.elementAt(i) ^ result.elementAt(i);
+    }
+    return r == 0;
   }
 
 }
