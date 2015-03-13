@@ -57,16 +57,12 @@ abstract class JsonWebAlgorithm<T extends JwaSignatureContext> {
       String signingInput, List<int> signatureBytes, T signatureContext);
 }
 
-// TODO: This is very specific to what is needed for HS256. Will need to be
-// generalised for other algorithms
 abstract class JwaSignatureContext {}
 
 class JwaSymmetricKeySignatureContext extends JwaSignatureContext {
   final String symmetricKey;
 
   JwaSymmetricKeySignatureContext(this.symmetricKey);
-
-//  JwaSymmetricKeySignatureContext.withKeys({this.symmetricKey});
 }
 
 class JwaRsaSignatureContext extends JwaSignatureContext {

@@ -22,8 +22,9 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
     return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
   }
 
-  factory JsonWebToken.jws(T claimSet, JwaSignatureContext signatureContext) {
-    return new _JwtInJws(claimSet, signatureContext);
+  factory JsonWebToken.jws(T claimSet, JwaSignatureContext signatureContext,
+      {JsonWebAlgorithm algorithm: JsonWebAlgorithm.HS256}) {
+    return new _JwtInJws(claimSet, signatureContext, algorithm);
   }
 
   // TODO: this doesn't make sense at this level but need to expose somehow.
@@ -75,10 +76,11 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
     return jwt;
   }
 
-  factory _JwtInJws(T claimSet, JwaSignatureContext signatureContext) {
+  factory _JwtInJws(T claimSet, JwaSignatureContext signatureContext,
+      JsonWebAlgorithm algorithm) {
 
     // TODO: need to add support for diff algorithms
-    final JwsHeader header = new JwsHeader(JwsType.JWT, JsonWebAlgorithm.HS256);
+    final JwsHeader header = new JwsHeader(JwsType.JWT, algorithm);
     final String signingInput = JoseObject.encodeSegments([header, claimSet]);
 
     final JwsSignature signature = new JwsSignature.create(
