@@ -12,20 +12,19 @@ class ConstraintViolation {
   final String message;
 
   ConstraintViolation(this.message);
-  
+
   @override
   String toString() => message;
 }
 
-
 class ConstraintViolations {
   final String preamble;
   final Set<ConstraintViolation> violations;
-  
+
   // TODO: likely too simplistic
-  String get summaryMessage => 
+  String get summaryMessage =>
       '$preamble. The following constraints were violated\n'
       '${violations.join("\n")}';
-  
+
   ConstraintViolations(this.preamble, this.violations);
 }
