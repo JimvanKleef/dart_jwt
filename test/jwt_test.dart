@@ -12,7 +12,7 @@ void main()  {
   final String subject = 'admin';
   final DateTime expiry = DateTime.parse('2014-03-07 15:26:07.000+11:00').toUtc();
   final DateTime issuedAt = DateTime.parse('2014-03-07 15:23:07.000+11:00').toUtc();
-  final JwaSignatureContext signatureContext = new JwaSignatureContext(sharedSecret);
+  final JwaSignatureContext signatureContext = new JwaSymmetricKeySignatureContext(sharedSecret);
   final claimSetValidationContext = new JwtClaimSetValidationContext(
       expiryTolerance: const Duration(days: 365*1000));
   final JwtValidationContext validationContext = new JwtValidationContext(
@@ -27,7 +27,7 @@ void main()  {
 
     JsonWebToken jwt() => new JsonWebToken.decode(jwtStr);
     JwtClaimSet claimSet() => jwt().claimSet;
-    
+
     group('[claimset]', () {
       test('issuer parses', () {
         expect(claimSet().issuer, equals(issuer));
@@ -45,11 +45,11 @@ void main()  {
     group('[signature]', () {
       test('validates successfully with correct shared secret', () {
         Set<ConstraintViolation> violations = jwt().validate(validationContext);
-        expect(violations, isEmpty);        
+        expect(violations, isEmpty);
       });
     });
   });
-  
+
   group('[encode]', () {
     final claimSet = (new MutableJwtClaimSet()
       ..issuer=issuer
@@ -58,14 +58,14 @@ void main()  {
       ..expiry=expiry
       ..issuedAt=issuedAt)
       .toImmutable();
-    
+
     JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
-    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(), 
+    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(),
         validationContext: validationContext);
     JwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
-    
-    
+
+
     group('[roundtrip]', () {
       test('issuer matches', () {
         expect(roundtripClaimSet().issuer, equals(issuer));
@@ -84,7 +84,7 @@ void main()  {
       });
     });
   });
-  
+
   group('[validation]', () {
 
     JwtClaimSet claimSet(int secondsBeforeNow) => new MutableJwtClaimSet()
@@ -94,19 +94,19 @@ void main()  {
           new Duration(seconds: secondsBeforeNow))
       ..issuedAt=issuedAt
       ..toImmutable();
-    
-    Set<ConstraintViolation> violations(int secondsBeforeNow) => 
+
+    Set<ConstraintViolation> violations(int secondsBeforeNow) =>
         claimSet(secondsBeforeNow).validate(const JwtClaimSetValidationContext());
-    
+
     group('[expiry]', () {
       test('fails validation if more than tolerance past expiry', () {
         expect(violations(31), isNot(isEmpty));
       });
-    
+
       test('passes validation if no more than tolerance past expiry', () {
         expect(violations(30), isEmpty);
       });
-    
+
     });
   });
 }

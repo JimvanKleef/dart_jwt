@@ -14,7 +14,7 @@ void main() {
   group('[HS256]', () {
     String sign(String signingInput, String sharedSecret) {
       final jwsSignature = new JwsSignature.create(signingInput, JsonWebAlgorithm.HS256,
-      new JwaSignatureContext(sharedSecret));
+      new JwaSymmetricKeySignatureContext(sharedSecret));
       return jwsSignature.encode();
     }
 
@@ -121,7 +121,7 @@ K+g1U8zsBcMm15Hf+bJnIr+A
 
     String sign(String signingInput, RSAPrivateKey rsaPrivateKey) {
       final jwsSignature = new JwsSignature.create(signingInput,
-      JsonWebAlgorithm.RS256, new JwaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey));
+      JsonWebAlgorithm.RS256, new JwaRsaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey));
       return jwsSignature.encode();
     }
 
@@ -186,7 +186,7 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
 
     test('sign', () {
       final jwsSignature = new JwsSignature.create(signingInput,
-      JsonWebAlgorithm.RS256, new JwaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey));
+      JsonWebAlgorithm.RS256, new JwaRsaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey));
       var signature = jwsSignature.encode();
       expect(signature, equals('WqJ6jfYd2Pnp9vxn8CcVsbxwB1oAkIdH_QR9l1mF4-N__0JAhwNdcE'
       'HF5DSxXEbfQuYJ8ybdFQoGPJ5aBmmnCfuY_mbCqWmnkNJTof3vAshfbemPhv7RBgMIBKPjcz3ZXEL6R'
@@ -207,7 +207,7 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
           0xe2, 0x35, 0x71, 0x3d, 0x56, 0x81, 0x89, 0xad, 0x3c, 0xd5, 0x04, 0x18, 0x4e, 0x64, 0xfe, 0xda, 0xd7, 0x39, 0xc1, 0x8e, 0x0c, 0xf1, 0xb3, 0x44, 0xdd, 0xcf, 0x3b, 0x5b, 0x8c, 0x2f, 0x87, 0xe1,
       ]);
       final jwsSignature = new JwsSignature(signatureBytes);
-      var violations = jwsSignature.validate(signingInput, JsonWebAlgorithm.RS256, new JwaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey));
+      var violations = jwsSignature.validate(signingInput, JsonWebAlgorithm.RS256, new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey));
       expect(violations.length, equals(0));
     });
 

@@ -13,7 +13,7 @@ Logger _log = new Logger("jwt.jwa");
 /**
  * Represents a [JSON Web Algorithm](http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-25)
  */
-abstract class JsonWebAlgorithm {
+abstract class JsonWebAlgorithm<T extends JwaSignatureContext> {
   final String name;
 
   const JsonWebAlgorithm._internal(this.name);
@@ -32,12 +32,12 @@ abstract class JsonWebAlgorithm {
 
   String toString() => '$name';
 
-  List<int> sign(String signingInput, JwaSignatureContext signatureContext) {
+  List<int> sign(String signingInput, T signatureContext) {
     initCipher();
 
     /*
      * TODO: ugly. Because I'm base 64 decoding the signature from the request I need
-     * to reencode here. Better to avoid the decode in the first place 
+     * to reencode here. Better to avoid the decode in the first place
      */
     final raw = _rawSign(signingInput, signatureContext);
     final sig = CryptoUtils.bytesToBase64(raw, urlSafe: true);
@@ -45,32 +45,44 @@ abstract class JsonWebAlgorithm {
     return CryptoUtils.base64StringToBytes(sig);
   }
 
-  Set<ConstraintViolation> validateSignature(String signingInput, List<int> signatureBytes, JwaSignatureContext signatureContext) {
+  Set<ConstraintViolation> validateSignature(String signingInput, List<int> signatureBytes, T signatureContext) {
     initCipher();
     return _internalValidateSignature(signingInput, signatureBytes, signatureContext);
   }
 
-  List<int> _rawSign(String signingInput, JwaSignatureContext validationContext);
-  Set<ConstraintViolation> _internalValidateSignature(String signingInput, List<int> signatureBytes, JwaSignatureContext signatureContext);
+  List<int> _rawSign(String signingInput, T validationContext);
+  Set<ConstraintViolation> _internalValidateSignature(String signingInput, List<int> signatureBytes, T signatureContext);
 
 }
 
 // TODO: This is very specific to what is needed for HS256. Will need to be
 // generalised for other algorithms
-class JwaSignatureContext {
-  final String symmetricKey;
-  final RSAPrivateKey rsaPrivateKey;
-  final RSAPublicKey rsaPublicKey;
-  JwaSignatureContext(this.symmetricKey, {this.rsaPrivateKey}) : rsaPublicKey = null;
-  JwaSignatureContext.withKeys({this.symmetricKey, this.rsaPublicKey, this.rsaPrivateKey});
+abstract class JwaSignatureContext {
 }
 
-class _HS256JsonWebAlgorithm extends JsonWebAlgorithm {
+class JwaSymmetricKeySignatureContext extends JwaSignatureContext {
+  final String symmetricKey;
+
+  JwaSymmetricKeySignatureContext(this.symmetricKey);
+
+//  JwaSymmetricKeySignatureContext.withKeys({this.symmetricKey});
+}
+
+class JwaRsaSignatureContext extends JwaSignatureContext {
+  final RSAPrivateKey rsaPrivateKey;
+  final RSAPublicKey rsaPublicKey;
+
+  JwaRsaSignatureContext(this.rsaPublicKey, this.rsaPrivateKey);
+  JwaRsaSignatureContext.withKeys({this.rsaPublicKey, this.rsaPrivateKey});
+}
+
+
+class _HS256JsonWebAlgorithm extends JsonWebAlgorithm<JwaSymmetricKeySignatureContext> {
 
   const _HS256JsonWebAlgorithm() : super._internal('HS256');
 
   @override
-  List<int> _rawSign(String signingInput, JwaSignatureContext signatureContext) {
+  List<int> _rawSign(String signingInput, JwaSymmetricKeySignatureContext signatureContext) {
     _log.finest('signingInput: $signingInput, sharedSecret: ${signatureContext.symmetricKey}');
     final hmac = new HMAC(new SHA256(), signatureContext.symmetricKey.codeUnits);
     hmac.add(signingInput.codeUnits);
@@ -78,7 +90,8 @@ class _HS256JsonWebAlgorithm extends JsonWebAlgorithm {
   }
 
   @override
-  Set<ConstraintViolation> _internalValidateSignature(String signingInput, List<int> signatureBytes, JwaSignatureContext signatureContext) {
+  Set<ConstraintViolation> _internalValidateSignature(String signingInput, List<int> signatureBytes,
+                                                      JwaSymmetricKeySignatureContext signatureContext) {
     List<int> result = this.sign(signingInput, signatureContext);
 
     return _signaturesMatch(result, signatureBytes) ? new Set.identity() :
@@ -100,11 +113,11 @@ class _HS256JsonWebAlgorithm extends JsonWebAlgorithm {
 
 }
 
-class _RS256JsonWebAlgorithm extends JsonWebAlgorithm {
+class _RS256JsonWebAlgorithm extends JsonWebAlgorithm<JwaRsaSignatureContext> {
   const _RS256JsonWebAlgorithm() : super._internal('RS256');
 
   @override
-  List<int> _rawSign(String signingInput, JwaSignatureContext signatureContext) {
+  List<int> _rawSign(String signingInput, JwaRsaSignatureContext signatureContext) {
     if(signatureContext.rsaPrivateKey == null)
       throw new  ArgumentError.notNull("signatureContext.rsaPrivateKey");
 
@@ -116,7 +129,7 @@ class _RS256JsonWebAlgorithm extends JsonWebAlgorithm {
   }
 
   @override
-  Set<ConstraintViolation> _internalValidateSignature(String signingInput, List<int> signatureBytes, JwaSignatureContext signatureContext) {
+  Set<ConstraintViolation> _internalValidateSignature(String signingInput, List<int> signatureBytes, JwaRsaSignatureContext signatureContext) {
     if(signatureContext.rsaPublicKey == null)
       throw new  ArgumentError.notNull("signatureContext.rsaPublicKey");
 
