@@ -101,11 +101,11 @@ class JwtValidationContext extends JwsValidationContext {
       : super(signatureContext);
 
   JwtValidationContext.withSharedSecret(String sharedSecret) : this(
-          new JwaSignatureContext(sharedSecret),
+          new JwaSymmetricKeySignatureContext(sharedSecret),
           new JwtClaimSetValidationContext());
 
   JwtValidationContext.withRsaPublicKey(RSAPublicKey rsaPublicKey) : this(
-          new JwaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey),
+          new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey),
           new JwtClaimSetValidationContext());
 }
 
