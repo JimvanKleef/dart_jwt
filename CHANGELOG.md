@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Improvements for RSA. Thanks to Jonas Kello for the contribution
+
 ## 0.1.3
 
 * Add RSA signatures. Thanks to Tais Plougmann Hansen for the contribution
