@@ -84,25 +84,7 @@ class JwsSignature extends Base64EncodedData {
 
   Set<ConstraintViolation> validate(String signingInput, JsonWebAlgorithm
       algorithm, JwaSignatureContext signatureContext) {
-
-    List<int> result = algorithm.sign(signingInput, signatureContext);
-
-    return _signaturesMatch(result) ? new Set.identity() :
-      (new Set()..add(new ConstraintViolation('signatures do not match. ' +
-          'Received: ${bytesToBase64(signatureBytes)} vs ' +
-          'Calculated: ${bytesToBase64(result)}')));
-  }
-
-  bool _signaturesMatch(List<int> result) {
-    // a time constant comparison to avoid timing attacks
-    if(signatureBytes.length != result.length)
-      return false;
-
-    var r = 0;
-    for(int i = 0; i < signatureBytes.length; i++) {
-      r |= signatureBytes.elementAt(i) ^ result.elementAt(i);
-    }
-    return r == 0;
+    return algorithm.validateSignature(signingInput, signatureBytes, signatureContext);
   }
 
   @override

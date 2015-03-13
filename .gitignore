@@ -1,7 +1,4 @@
 pubspec.lock
-*/pubspec.lock
-.idea
 packages
-test/packages
-atlassian_connect_shelf/.pub
-*/.pub
+.idea
+.pub

@@ -1,3 +1,7 @@
+## 0.1.3
+
+* Add RSA signatures. Thanks to Tais Plougmann Hansen for the contribution
+
 ## 0.1.2
 
 * make typ header optional and default to JWT
