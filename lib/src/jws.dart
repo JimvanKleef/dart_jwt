@@ -123,6 +123,7 @@ class JwsType {
 
   static Map<String, JwsType> _supportedTypes = {
     null: JWT,
+    'jwt': JWT, // some OIDC providers use lowercase
     'JWT': JWT
   };
 
