@@ -32,8 +32,9 @@ abstract class JsonWebSignature<P extends JosePayload>
 
   Set<ConstraintViolation> validateSignature(
       JwsValidationContext validationContext) {
-    return signature.validate(
-        _signingInput, header.algorithm, validationContext.signatureContext);
+    
+    return signature.validate(_signingInput, header.algorithm,
+              validationContext.signatureContext);
   }
 
   Set<ConstraintViolation> validatePayload(
@@ -76,7 +77,7 @@ class JwsSignature extends Base64EncodedData {
 
   JwsSignature.decode(String base64String)
       : this(Base64EncodedData.decodeToBytes(base64String));
-
+  
   Set<ConstraintViolation> validate(String signingInput,
       JsonWebAlgorithm algorithm, JwaSignatureContext signatureContext) {
     return algorithm.validateSignature(
@@ -99,7 +100,11 @@ class JwsType {
 
   static const JwsType JWT = const JwsType._internal('JWT');
 
-  static Map<String, JwsType> _supportedTypes = {null: JWT, 'JWT': JWT};
+  static Map<String, JwsType> _supportedTypes = {
+    null: JWT,
+    'jwt': JWT, // some OIDC providers use lowercase
+    'JWT': JWT
+  };
 
   String toString() => '$name';
 }

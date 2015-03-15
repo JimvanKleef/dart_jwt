@@ -6,27 +6,27 @@ import 'util.dart';
 
 class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   final String issuer;
-  final String audience;
+  final List<String> audience;
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
-
-  JwtClaimSet(
-      this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
-
+  
+  JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
+  
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
         expiry = decodeIntDate(json['exp']),
         issuedAt = decodeIntDate(json['iat']),
-        audience = json['aud'];
+        audience = ( json['aud'] is String ? [ json['aud']] : json['aud']);
+
 }
 
 class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
     implements JwtClaimSet {
   String issuer;
   String subject;
-  String audience;
+  List<String> audience;
   DateTime expiry;
   DateTime issuedAt;
 
@@ -36,15 +36,15 @@ class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
 
 class JwtClaimSetValidationContext {
   final Duration expiryTolerance;
-
-  const JwtClaimSetValidationContext(
-      {this.expiryTolerance: const Duration(seconds: 30)});
+  
+  const JwtClaimSetValidationContext( 
+      { this.expiryTolerance: const Duration(seconds: 30) } );
 }
 
 abstract class _JwtClaimSetMixin {
   String get issuer;
   String get subject;
-  String get audience;
+  List<String> get audience;
   DateTime get expiry;
   DateTime get issuedAt;
 
@@ -59,9 +59,8 @@ abstract class _JwtClaimSetMixin {
   }
 
   String toString() => 'JwtClaimSet[issuer=$issuer]';
-
-  Set<ConstraintViolation> validate(
-      JwtClaimSetValidationContext validationContext) {
+    
+  Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
     final now = new DateTime.now();
     final diff = now.difference(expiry);
     if (diff > validationContext.expiryTolerance) {

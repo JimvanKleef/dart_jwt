@@ -8,7 +8,7 @@ import 'package:dart_jwt/src/validation_constraint.dart';
 void main() {
   final String sharedSecret = '3ab90b11-d7bd-4097-958f-01b7ac4e985f';
   final String issuer = 'jira:ae390d29-31b2-4c12-a719-9df64e3e92b7';
-  final String audience = 'foobar';
+  final List<String> audience = ['foobar'];
   final String subject = 'admin';
   final DateTime expiry =
       DateTime.parse('2014-03-07 15:26:07.000+11:00').toUtc();
@@ -54,16 +54,17 @@ void main() {
 
   group('[encode]', () {
     final claimSet = (new MutableJwtClaimSet()
-      ..issuer = issuer
-      ..subject = subject
-      ..audience = audience
-      ..expiry = expiry
-      ..issuedAt = issuedAt).toImmutable();
-
+      ..issuer=issuer
+      ..subject=subject
+      ..audience=audience
+      ..expiry=expiry
+      ..issuedAt=issuedAt)
+      .toImmutable();
+    
     JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
-    JsonWebToken parseEncoded() =>
-        new JsonWebToken.decode(encode(), validationContext: validationContext);
+    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(), 
+        validationContext: validationContext);
     JwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
 
     group('[roundtrip]', () {
@@ -84,7 +85,7 @@ void main() {
       });
     });
   });
-
+  
   group('[validation]', () {
     JwtClaimSet claimSet(int secondsBeforeNow) => new MutableJwtClaimSet()
       ..issuer = issuer
@@ -95,8 +96,7 @@ void main() {
       ..toImmutable();
 
     Set<ConstraintViolation> violations(int secondsBeforeNow) =>
-        claimSet(secondsBeforeNow)
-            .validate(const JwtClaimSetValidationContext());
+        claimSet(secondsBeforeNow).validate(const JwtClaimSetValidationContext());
 
     group('[expiry]', () {
       test('fails validation if more than tolerance past expiry', () {
@@ -106,6 +106,7 @@ void main() {
       test('passes validation if no more than tolerance past expiry', () {
         expect(violations(30), isEmpty);
       });
+    
     });
   });
 }
