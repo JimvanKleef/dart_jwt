@@ -4,66 +4,76 @@ import 'jose.dart';
 import 'validation_constraint.dart';
 import 'util.dart';
 
-class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
+abstract class JwtClaimSet extends JosePayload {
+  Set<ConstraintViolation> validate(
+      JwtClaimSetValidationContext validationContext);
+}
+
+typedef Set<ConstraintViolation> MapClaimSetValidator(
+    Map claimSetJson, JwtClaimSetValidationContext validationContext);
+
+Set<ConstraintViolation> _noopValidator(
+        Map claimSetJson, JwtClaimSetValidationContext validationContext) =>
+    new Set();
+
+class MapJwtClaimSet extends JwtClaimSet {
+  final Map json;
+  final MapClaimSetValidator validator;
+
+  MapJwtClaimSet(this.json, {this.validator: _noopValidator});
+
+  MapJwtClaimSet.fromJson(this.json, {this.validator: _noopValidator});
+
+  Map toJson() => json;
+
+  Map toMap() => json;
+
+  Set<ConstraintViolation> validate(
+          JwtClaimSetValidationContext validationContext) =>
+      validator(json, validationContext);
+}
+
+class OpenIdJwtClaimSet extends JwtClaimSet {
   final String issuer;
   final List<String> audience;
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
-  
-  JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
 
-  JwtClaimSet.build({this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
+  OpenIdJwtClaimSet(
+      this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
 
-  JwtClaimSet.fromJson(Map json)
+  OpenIdJwtClaimSet.build(
+      {this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
+
+  OpenIdJwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
         expiry = decodeIntDate(json['exp']),
         issuedAt = decodeIntDate(json['iat']),
-        audience = ( json['aud'] is String ? [ json['aud']] : json['aud']);
+        audience = (json['aud'] is String ? [json['aud']] : json['aud']);
 
-}
-
-@deprecated
-class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
-    implements JwtClaimSet {
-  String issuer;
-  String subject;
-  List<String> audience;
-  DateTime expiry;
-  DateTime issuedAt;
-
-  JwtClaimSet toImmutable() =>
-      new JwtClaimSet(issuer, subject, expiry, issuedAt, audience);
-}
-
-class JwtClaimSetValidationContext {
-  final Duration expiryTolerance;
-  
-  const JwtClaimSetValidationContext( 
-      { this.expiryTolerance: const Duration(seconds: 30) } );
-}
-
-abstract class _JwtClaimSetMixin {
-  String get issuer;
-  String get subject;
-  List<String> get audience;
-  DateTime get expiry;
-  DateTime get issuedAt;
-
-  Map toJson() {
-    return {
-      'iat': encodeIntDate(issuedAt),
-      'exp': encodeIntDate(expiry),
-      'iss': issuer,
-      'sub': subject,
-      'aud': audience
-    };
+  OpenIdJwtClaimSet copy({String issuer, List<String> audience, String subject,
+      DateTime expiry, DateTime issuedAt}) {
+    return new OpenIdJwtClaimSet(issuer != null ? issuer : this.issuer,
+        subject != null ? subject : this.subject,
+        expiry != null ? expiry : this.expiry, issuedAt != null
+            ? issuedAt
+            : this.issuedAt, audience != null ? audience : this.audience);
   }
 
+  Map toJson() => {
+    'iat': encodeIntDate(issuedAt),
+    'exp': encodeIntDate(expiry),
+    'iss': issuer,
+    'sub': subject,
+    'aud': audience
+  };
+
   String toString() => 'JwtClaimSet[issuer=$issuer]';
-    
-  Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
+
+  Set<ConstraintViolation> validate(
+      JwtClaimSetValidationContext validationContext) {
     final now = new DateTime.now();
     final diff = now.difference(expiry);
     if (diff > validationContext.expiryTolerance) {
@@ -75,4 +85,11 @@ abstract class _JwtClaimSetMixin {
 
     return new Set.identity();
   }
+}
+
+class JwtClaimSetValidationContext {
+  final Duration expiryTolerance;
+
+  const JwtClaimSetValidationContext(
+      {this.expiryTolerance: const Duration(seconds: 30)});
 }
