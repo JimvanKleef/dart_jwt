@@ -1,3 +1,7 @@
+## 0.3.0
+* Audience is now a List (breaking)
+* MutableJwtClaimSet now deprecated
+
 ## 0.2.0
 
 * Improvements for RSA. Thanks to Jonas Kello for the contribution
