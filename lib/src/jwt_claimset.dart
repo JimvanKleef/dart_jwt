@@ -4,7 +4,7 @@ import 'jose.dart';
 import 'validation_constraint.dart';
 import 'util.dart';
 
-class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
+class JwtClaimSet extends JosePayload {
   final String issuer;
   final List<String> audience;
   final String subject;
@@ -22,19 +22,31 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
         issuedAt = decodeIntDate(json['iat']),
         audience = ( json['aud'] is String ? [ json['aud']] : json['aud']);
 
-}
+  Map toJson() {
+    return {
+        'iat': encodeIntDate(issuedAt),
+        'exp': encodeIntDate(expiry),
+        'iss': issuer,
+        'sub': subject,
+        'aud': audience
+    };
+  }
 
-@deprecated
-class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
-    implements JwtClaimSet {
-  String issuer;
-  String subject;
-  List<String> audience;
-  DateTime expiry;
-  DateTime issuedAt;
+  String toString() => 'JwtClaimSet[issuer=$issuer]';
 
-  JwtClaimSet toImmutable() =>
-      new JwtClaimSet(issuer, subject, expiry, issuedAt, audience);
+  Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
+    final now = new DateTime.now();
+    final diff = now.difference(expiry);
+    if (diff > validationContext.expiryTolerance) {
+      return new Set()
+        ..add(new ConstraintViolation(
+          'JWT expired. Expiry ($expiry) is more than tolerance '
+          '(${validationContext.expiryTolerance}) before now ($now)'));
+    }
+
+    return new Set.identity();
+  }
+
 }
 
 class JwtClaimSetValidationContext {
@@ -42,37 +54,4 @@ class JwtClaimSetValidationContext {
   
   const JwtClaimSetValidationContext( 
       { this.expiryTolerance: const Duration(seconds: 30) } );
-}
-
-abstract class _JwtClaimSetMixin {
-  String get issuer;
-  String get subject;
-  List<String> get audience;
-  DateTime get expiry;
-  DateTime get issuedAt;
-
-  Map toJson() {
-    return {
-      'iat': encodeIntDate(issuedAt),
-      'exp': encodeIntDate(expiry),
-      'iss': issuer,
-      'sub': subject,
-      'aud': audience
-    };
-  }
-
-  String toString() => 'JwtClaimSet[issuer=$issuer]';
-    
-  Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
-    final now = new DateTime.now();
-    final diff = now.difference(expiry);
-    if (diff > validationContext.expiryTolerance) {
-      return new Set()
-        ..add(new ConstraintViolation(
-            'JWT expired. Expiry ($expiry) is more than tolerance '
-            '(${validationContext.expiryTolerance}) before now ($now)'));
-    }
-
-    return new Set.identity();
-  }
 }
