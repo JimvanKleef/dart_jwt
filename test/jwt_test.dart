@@ -53,13 +53,12 @@ void main() {
   });
 
   group('[encode]', () {
-    final claimSet = (new MutableJwtClaimSet()
-      ..issuer=issuer
-      ..subject=subject
-      ..audience=audience
-      ..expiry=expiry
-      ..issuedAt=issuedAt)
-      .toImmutable();
+    final claimSet = new JwtClaimSet.build(
+      issuer:issuer
+      ,subject:subject
+      ,audience:audience
+      ,expiry:expiry
+      ,issuedAt:issuedAt);
     
     JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
@@ -87,13 +86,12 @@ void main() {
   });
   
   group('[validation]', () {
-    JwtClaimSet claimSet(int secondsBeforeNow) => new MutableJwtClaimSet()
-      ..issuer = issuer
-      ..subject = subject
-      ..expiry =
+    JwtClaimSet claimSet(int secondsBeforeNow) => new JwtClaimSet.build(
+      issuer : issuer
+      ,subject : subject
+      ,expiry :
       new DateTime.now().subtract(new Duration(seconds: secondsBeforeNow))
-      ..issuedAt = issuedAt
-      ..toImmutable();
+      ,issuedAt : issuedAt);
 
     Set<ConstraintViolation> violations(int secondsBeforeNow) =>
         claimSet(secondsBeforeNow).validate(const JwtClaimSetValidationContext());

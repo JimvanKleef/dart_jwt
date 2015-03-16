@@ -12,7 +12,9 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   final DateTime issuedAt;
   
   JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
-  
+
+  JwtClaimSet.build({this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
+
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
@@ -22,6 +24,7 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
 
 }
 
+@deprecated
 class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
     implements JwtClaimSet {
   String issuer;
