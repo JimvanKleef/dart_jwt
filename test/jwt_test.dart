@@ -54,16 +54,16 @@ void main() {
 
   group('[encode]', () {
     final claimSet = new JwtClaimSet.build(
-      issuer:issuer
-      ,subject:subject
-      ,audience:audience
-      ,expiry:expiry
-      ,issuedAt:issuedAt);
-    
+        issuer: issuer,
+        subject: subject,
+        audience: audience,
+        expiry: expiry,
+        issuedAt: issuedAt);
+
     JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
-    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(), 
-        validationContext: validationContext);
+    JsonWebToken parseEncoded() =>
+        new JsonWebToken.decode(encode(), validationContext: validationContext);
     JwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
 
     group('[roundtrip]', () {
@@ -84,17 +84,18 @@ void main() {
       });
     });
   });
-  
+
   group('[validation]', () {
     JwtClaimSet claimSet(int secondsBeforeNow) => new JwtClaimSet.build(
-      issuer : issuer
-      ,subject : subject
-      ,expiry :
-      new DateTime.now().subtract(new Duration(seconds: secondsBeforeNow))
-      ,issuedAt : issuedAt);
+        issuer: issuer,
+        subject: subject,
+        expiry: new DateTime.now()
+            .subtract(new Duration(seconds: secondsBeforeNow)),
+        issuedAt: issuedAt);
 
     Set<ConstraintViolation> violations(int secondsBeforeNow) =>
-        claimSet(secondsBeforeNow).validate(const JwtClaimSetValidationContext());
+        claimSet(secondsBeforeNow)
+            .validate(const JwtClaimSetValidationContext());
 
     group('[expiry]', () {
       test('fails validation if more than tolerance past expiry', () {
@@ -104,7 +105,6 @@ void main() {
       test('passes validation if no more than tolerance past expiry', () {
         expect(violations(30), isEmpty);
       });
-    
     });
   });
 }

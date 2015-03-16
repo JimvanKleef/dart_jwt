@@ -10,48 +10,50 @@ class JwtClaimSet extends JosePayload {
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
-  
-  JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
 
-  JwtClaimSet.build({this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
+  JwtClaimSet(
+      this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
+
+  JwtClaimSet.build(
+      {this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
 
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
         expiry = decodeIntDate(json['exp']),
         issuedAt = decodeIntDate(json['iat']),
-        audience = ( json['aud'] is String ? [ json['aud']] : json['aud']);
+        audience = (json['aud'] is String ? [json['aud']] : json['aud']);
 
   Map toJson() {
     return {
-        'iat': encodeIntDate(issuedAt),
-        'exp': encodeIntDate(expiry),
-        'iss': issuer,
-        'sub': subject,
-        'aud': audience
+      'iat': encodeIntDate(issuedAt),
+      'exp': encodeIntDate(expiry),
+      'iss': issuer,
+      'sub': subject,
+      'aud': audience
     };
   }
 
   String toString() => 'JwtClaimSet[issuer=$issuer]';
 
-  Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
+  Set<ConstraintViolation> validate(
+      JwtClaimSetValidationContext validationContext) {
     final now = new DateTime.now();
     final diff = now.difference(expiry);
     if (diff > validationContext.expiryTolerance) {
       return new Set()
         ..add(new ConstraintViolation(
-          'JWT expired. Expiry ($expiry) is more than tolerance '
-          '(${validationContext.expiryTolerance}) before now ($now)'));
+            'JWT expired. Expiry ($expiry) is more than tolerance '
+            '(${validationContext.expiryTolerance}) before now ($now)'));
     }
 
     return new Set.identity();
   }
-
 }
 
 class JwtClaimSetValidationContext {
   final Duration expiryTolerance;
-  
-  const JwtClaimSetValidationContext( 
-      { this.expiryTolerance: const Duration(seconds: 30) } );
+
+  const JwtClaimSetValidationContext(
+      {this.expiryTolerance: const Duration(seconds: 30)});
 }

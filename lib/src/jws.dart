@@ -32,9 +32,8 @@ abstract class JsonWebSignature<P extends JosePayload>
 
   Set<ConstraintViolation> validateSignature(
       JwsValidationContext validationContext) {
-    
-    return signature.validate(_signingInput, header.algorithm,
-              validationContext.signatureContext);
+    return signature.validate(
+        _signingInput, header.algorithm, validationContext.signatureContext);
   }
 
   Set<ConstraintViolation> validatePayload(
@@ -77,7 +76,7 @@ class JwsSignature extends Base64EncodedData {
 
   JwsSignature.decode(String base64String)
       : this(Base64EncodedData.decodeToBytes(base64String));
-  
+
   Set<ConstraintViolation> validate(String signingInput,
       JsonWebAlgorithm algorithm, JwaSignatureContext signatureContext) {
     return algorithm.validateSignature(
