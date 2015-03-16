@@ -111,4 +111,5 @@ class JwtValidationContext extends JwsValidationContext {
 
 typedef JwtClaimSet ClaimSetParser(Map json);
 
-JwtClaimSet _defaultClaimSetParser(Map json) => new JwtClaimSet.fromJson(json);
+JwtClaimSet _defaultClaimSetParser(Map json) =>
+    new OpenIdJwtClaimSet.fromJson(json);

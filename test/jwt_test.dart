@@ -28,7 +28,7 @@ void main() {
 
   group('[decode]', () {
     JsonWebToken jwt() => new JsonWebToken.decode(jwtStr);
-    JwtClaimSet claimSet() => jwt().claimSet;
+    OpenIdJwtClaimSet claimSet() => jwt().claimSet;
 
     group('[claimset]', () {
       test('issuer parses', () {
@@ -53,7 +53,7 @@ void main() {
   });
 
   group('[encode]', () {
-    final claimSet = new JwtClaimSet.build(
+    final claimSet = new OpenIdJwtClaimSet.build(
         issuer: issuer,
         subject: subject,
         audience: audience,
@@ -64,7 +64,7 @@ void main() {
     String encode() => jwt().encode();
     JsonWebToken parseEncoded() =>
         new JsonWebToken.decode(encode(), validationContext: validationContext);
-    JwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
+    OpenIdJwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
 
     group('[roundtrip]', () {
       test('issuer matches', () {
@@ -86,12 +86,13 @@ void main() {
   });
 
   group('[validation]', () {
-    JwtClaimSet claimSet(int secondsBeforeNow) => new JwtClaimSet.build(
-        issuer: issuer,
-        subject: subject,
-        expiry: new DateTime.now()
-            .subtract(new Duration(seconds: secondsBeforeNow)),
-        issuedAt: issuedAt);
+    OpenIdJwtClaimSet claimSet(int secondsBeforeNow) =>
+        new OpenIdJwtClaimSet.build(
+            issuer: issuer,
+            subject: subject,
+            expiry: new DateTime.now()
+                .subtract(new Duration(seconds: secondsBeforeNow)),
+            issuedAt: issuedAt);
 
     Set<ConstraintViolation> violations(int secondsBeforeNow) =>
         claimSet(secondsBeforeNow)

@@ -4,20 +4,22 @@ import 'jose.dart';
 import 'validation_constraint.dart';
 import 'util.dart';
 
-class JwtClaimSet extends JosePayload {
+abstract class JwtClaimSet extends JosePayload {}
+
+class OpenIdJwtClaimSet extends JwtClaimSet {
   final String issuer;
   final List<String> audience;
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
 
-  JwtClaimSet(
+  OpenIdJwtClaimSet(
       this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
 
-  JwtClaimSet.build(
+  OpenIdJwtClaimSet.build(
       {this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
 
-  JwtClaimSet.fromJson(Map json)
+  OpenIdJwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
         subject = json['sub'],
         expiry = decodeIntDate(json['exp']),
