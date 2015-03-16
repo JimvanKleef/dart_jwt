@@ -9,13 +9,28 @@ abstract class JwtClaimSet extends JosePayload {
       JwtClaimSetValidationContext validationContext);
 }
 
-abstract class MapJwtClaimSet extends JwtClaimSet {
-  final Map json;
+typedef Set<ConstraintViolation> MapClaimSetValidator(
+    Map claimSetJson, JwtClaimSetValidationContext validationContext);
 
-  MapJwtClaimSet(this.json);
-  MapJwtClaimSet.fromJson(this.json);
+Set<ConstraintViolation> _noopValidator(
+        Map claimSetJson, JwtClaimSetValidationContext validationContext) =>
+    new Set();
+
+class MapJwtClaimSet extends JwtClaimSet {
+  final Map json;
+  final MapClaimSetValidator validator;
+
+  MapJwtClaimSet(this.json, {this.validator: _noopValidator});
+
+  MapJwtClaimSet.fromJson(this.json, {this.validator: _noopValidator});
 
   Map toJson() => json;
+
+  Map toMap() => json;
+
+  Set<ConstraintViolation> validate(
+          JwtClaimSetValidationContext validationContext) =>
+      validator(json, validationContext);
 }
 
 class OpenIdJwtClaimSet extends JwtClaimSet {

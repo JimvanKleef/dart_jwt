@@ -108,4 +108,23 @@ void main() {
       });
     });
   });
+
+  group('[map claim set]', () {
+    group('[encode]', () {
+      final claimSet = new MapJwtClaimSet.fromJson({'iss': issuer});
+
+      JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
+      String encode() => jwt().encode();
+      JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(),
+          validationContext: validationContext,
+          claimSetParser: mapClaimSetParser);
+      MapJwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
+
+      group('[roundtrip]', () {
+        test('issuer matches', () {
+          expect(roundtripClaimSet().json['iss'], equals(issuer));
+        });
+      });
+    });
+  });
 }

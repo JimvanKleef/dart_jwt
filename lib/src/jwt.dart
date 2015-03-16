@@ -114,4 +114,4 @@ typedef JwtClaimSet ClaimSetParser(Map json);
 JwtClaimSet openIdClaimSetParser(Map json) =>
     new OpenIdJwtClaimSet.fromJson(json);
 
-JwtClaimSet maoClaimSetParser(Map json) => new MapJwtClaimSet.fromJson(json);
+JwtClaimSet mapClaimSetParser(Map json) => new MapJwtClaimSet.fromJson(json);
