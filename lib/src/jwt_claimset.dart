@@ -4,12 +4,16 @@ import 'jose.dart';
 import 'validation_constraint.dart';
 import 'util.dart';
 
-abstract class JwtClaimSet extends JosePayload {}
+abstract class JwtClaimSet extends JosePayload {
+  Set<ConstraintViolation> validate(
+      JwtClaimSetValidationContext validationContext);
+}
 
-class MapJwtClaimSet extends JwtClaimSet {
+abstract class MapJwtClaimSet extends JwtClaimSet {
   final Map json;
 
   MapJwtClaimSet(this.json);
+  MapJwtClaimSet.fromJson(this.json);
 
   Map toJson() => json;
 }
@@ -33,6 +37,15 @@ class OpenIdJwtClaimSet extends JwtClaimSet {
         expiry = decodeIntDate(json['exp']),
         issuedAt = decodeIntDate(json['iat']),
         audience = (json['aud'] is String ? [json['aud']] : json['aud']);
+
+  OpenIdJwtClaimSet copy({String issuer, List<String> audience, String subject,
+      DateTime expiry, DateTime issuedAt}) {
+    return new OpenIdJwtClaimSet(issuer != null ? issuer : this.issuer,
+        subject != null ? subject : this.subject,
+        expiry != null ? expiry : this.expiry, issuedAt != null
+            ? issuedAt
+            : this.issuedAt, audience != null ? audience : this.audience);
+  }
 
   Map toJson() => {
     'iat': encodeIntDate(issuedAt),

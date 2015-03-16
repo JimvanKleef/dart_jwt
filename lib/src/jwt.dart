@@ -17,7 +17,7 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
 
   factory JsonWebToken.decode(String jwtToken,
       {JwsValidationContext validationContext,
-      ClaimSetParser claimSetParser: _defaultClaimSetParser}) {
+      ClaimSetParser claimSetParser: openIdClaimSetParser}) {
     // TODO: figure out if the jwt is in a jws or jwe structure. Assuming jws for now
     return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
   }
@@ -111,5 +111,7 @@ class JwtValidationContext extends JwsValidationContext {
 
 typedef JwtClaimSet ClaimSetParser(Map json);
 
-JwtClaimSet _defaultClaimSetParser(Map json) =>
+JwtClaimSet openIdClaimSetParser(Map json) =>
     new OpenIdJwtClaimSet.fromJson(json);
+
+JwtClaimSet maoClaimSetParser(Map json) => new MapJwtClaimSet.fromJson(json);
