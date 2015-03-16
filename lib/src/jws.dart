@@ -14,31 +14,31 @@ typedef JosePayload PayloadParser(Map json);
  * A Jws has a [header] that describes the [JsonWebAlgorithm] used to generate
  * the [signature]
  */
-abstract class JsonWebSignature<P extends JosePayload> extends JoseObject<JwsHeader, P> {
+abstract class JsonWebSignature<P extends JosePayload>
+    extends JoseObject<JwsHeader, P> {
   final JwsSignature signature;
   final String _signingInput;
 
   Iterable<Base64EncodedData> get segments => [header, payload, signature];
 
-
-  JsonWebSignature(JwsHeader header, P payload, this.signature, this._signingInput)
+  JsonWebSignature(
+      JwsHeader header, P payload, this.signature, this._signingInput)
       : super(header, payload);
 
   Set<ConstraintViolation> validate(JwsValidationContext validationContext) {
     return validateSignature(validationContext)
-        ..addAll(validatePayload(validationContext));
+      ..addAll(validatePayload(validationContext));
   }
 
   Set<ConstraintViolation> validateSignature(
       JwsValidationContext validationContext) {
-
+    
     return signature.validate(_signingInput, header.algorithm,
               validationContext.signatureContext);
   }
 
   Set<ConstraintViolation> validatePayload(
       JwsValidationContext validationContext);
-
 }
 
 /// A header for a [JsonWebSignature] defining the [type] of JWS object and
@@ -49,18 +49,14 @@ class JwsHeader extends JoseHeader {
 
   JwsHeader(this.type, this.algorithm);
 
+  JwsHeader.fromJson(Map json)
+      : this(JwsType.lookup(json['typ']), JsonWebAlgorithm.lookup(json['alg']));
 
-  JwsHeader.fromJson(Map json): this(JwsType.lookup(json['typ']),
-      JsonWebAlgorithm.lookup(json['alg']));
-
-  JwsHeader.decode(String base64String) :
-    this.fromJson(Base64EncodedJson.decodeToJson(base64String));
+  JwsHeader.decode(String base64String)
+      : this.fromJson(Base64EncodedJson.decodeToJson(base64String));
 
   Map toJson() {
-    return {
-      'alg': algorithm.name,
-      'typ': type.name
-    };
+    return {'alg': algorithm.name, 'typ': type.name};
   }
 
   String toString() => 'JwsHeader[type=$type, algorithm=$algorithm]';
@@ -75,34 +71,17 @@ class JwsSignature extends Base64EncodedData {
 
   JwsSignature(this.signatureBytes);
 
-  JwsSignature.create(String signingInput, JsonWebAlgorithm
-               algorithm, JwaSignatureContext signatureContext)
+  JwsSignature.create(String signingInput, JsonWebAlgorithm algorithm,
+      JwaSignatureContext signatureContext)
       : signatureBytes = algorithm.sign(signingInput, signatureContext);
 
   JwsSignature.decode(String base64String)
       : this(Base64EncodedData.decodeToBytes(base64String));
-
-  Set<ConstraintViolation> validate(String signingInput, JsonWebAlgorithm
-      algorithm, JwaSignatureContext signatureContext) {
-
-    List<int> result = algorithm.sign(signingInput, signatureContext);
-
-    return _signaturesMatch(result) ? new Set.identity() :
-      (new Set()..add(new ConstraintViolation('signatures do not match. ' +
-          'Received: ${bytesToBase64(signatureBytes)} vs ' +
-          'Calculated: ${bytesToBase64(result)}')));
-  }
-
-  bool _signaturesMatch(List<int> result) {
-    // a time constant comparison to avoid timing attacks
-    if(signatureBytes.length != result.length)
-      return false;
-
-    var r = 0;
-    for(int i = 0; i < signatureBytes.length; i++) {
-      r |= signatureBytes.elementAt(i) ^ result.elementAt(i);
-    }
-    return r == 0;
+  
+  Set<ConstraintViolation> validate(String signingInput,
+      JsonWebAlgorithm algorithm, JwaSignatureContext signatureContext) {
+    return algorithm.validateSignature(
+        signingInput, signatureBytes, signatureContext);
   }
 
   @override
@@ -135,5 +114,3 @@ class JwsValidationContext {
 
   JwsValidationContext(this.signatureContext);
 }
-
-

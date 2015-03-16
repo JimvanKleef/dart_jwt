@@ -5,18 +5,21 @@ import 'package:dart_jwt/src/jwa.dart';
 import 'package:dart_jwt/src/jwt.dart';
 import 'package:dart_jwt/src/validation_constraint.dart';
 
-void main()  {
+void main() {
   final String sharedSecret = '3ab90b11-d7bd-4097-958f-01b7ac4e985f';
   final String issuer = 'jira:ae390d29-31b2-4c12-a719-9df64e3e92b7';
   final List<String> audience = ['foobar'];
   final String subject = 'admin';
-  final DateTime expiry = DateTime.parse('2014-03-07 15:26:07.000+11:00').toUtc();
-  final DateTime issuedAt = DateTime.parse('2014-03-07 15:23:07.000+11:00').toUtc();
-  final JwaSignatureContext signatureContext = new JwaSignatureContext(sharedSecret);
+  final DateTime expiry =
+      DateTime.parse('2014-03-07 15:26:07.000+11:00').toUtc();
+  final DateTime issuedAt =
+      DateTime.parse('2014-03-07 15:23:07.000+11:00').toUtc();
+  final JwaSignatureContext signatureContext =
+      new JwaSymmetricKeySignatureContext(sharedSecret);
   final claimSetValidationContext = new JwtClaimSetValidationContext(
-      expiryTolerance: const Duration(days: 365*1000));
-  final JwtValidationContext validationContext = new JwtValidationContext(
-      signatureContext, claimSetValidationContext);
+      expiryTolerance: const Duration(days: 365 * 1000));
+  final JwtValidationContext validationContext =
+      new JwtValidationContext(signatureContext, claimSetValidationContext);
   final String jwtStr = r'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
       'eyJleHAiOjEzOTQxNjYzNjcsInN1YiI6ImFkbWluIiwiaXNzIjoiamlyYTphZTM5MGQyOS0'
       'zMWIyLTRjMTItYTcxOS05ZGY2NGUzZTkyYjciLCJxc2giOiJlYjRlYzVmMDk4MGQwMWRhMz'
@@ -24,7 +27,6 @@ void main()  {
       'joxMzk0MTY2MTg3fQ.bR8Z0MIguOg6xgHiav0quun8kTqXzNUKMKym-PFjZvc';
 
   group('[decode]', () {
-
     JsonWebToken jwt() => new JsonWebToken.decode(jwtStr);
     JwtClaimSet claimSet() => jwt().claimSet;
 
@@ -51,20 +53,18 @@ void main()  {
   });
 
   group('[encode]', () {
-    final claimSet = (new MutableJwtClaimSet()
-      ..issuer=issuer
-      ..subject=subject
-      ..audience=audience
-      ..expiry=expiry
-      ..issuedAt=issuedAt)
-      .toImmutable();
-
+    final claimSet = new JwtClaimSet.build(
+      issuer:issuer
+      ,subject:subject
+      ,audience:audience
+      ,expiry:expiry
+      ,issuedAt:issuedAt);
+    
     JsonWebToken jwt() => new JsonWebToken.jws(claimSet, signatureContext);
     String encode() => jwt().encode();
-    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(),
+    JsonWebToken parseEncoded() => new JsonWebToken.decode(encode(), 
         validationContext: validationContext);
     JwtClaimSet roundtripClaimSet() => parseEncoded().claimSet;
-
 
     group('[roundtrip]', () {
       test('issuer matches', () {
@@ -84,16 +84,14 @@ void main()  {
       });
     });
   });
-
+  
   group('[validation]', () {
-
-    JwtClaimSet claimSet(int secondsBeforeNow) => new MutableJwtClaimSet()
-      ..issuer=issuer
-      ..subject=subject
-      ..expiry=new DateTime.now().subtract(
-          new Duration(seconds: secondsBeforeNow))
-      ..issuedAt=issuedAt
-      ..toImmutable();
+    JwtClaimSet claimSet(int secondsBeforeNow) => new JwtClaimSet.build(
+      issuer : issuer
+      ,subject : subject
+      ,expiry :
+      new DateTime.now().subtract(new Duration(seconds: secondsBeforeNow))
+      ,issuedAt : issuedAt);
 
     Set<ConstraintViolation> violations(int secondsBeforeNow) =>
         claimSet(secondsBeforeNow).validate(const JwtClaimSetValidationContext());
@@ -106,8 +104,7 @@ void main()  {
       test('passes validation if no more than tolerance past expiry', () {
         expect(violations(30), isEmpty);
       });
-
+    
     });
   });
 }
-

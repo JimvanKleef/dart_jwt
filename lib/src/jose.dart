@@ -1,9 +1,8 @@
 library jwt.jose;
- 
+
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'util.dart';
-
 
 /**
  * Base class for objects defined in the Jose specs that are strings made up of
@@ -16,16 +15,16 @@ abstract class JoseObject<H extends JoseHeader, P extends JosePayload> {
   final H header;
   final P payload;
   Iterable<Base64EncodedData> get segments;
-  
+
   /**
    * Returns the encoded form of the object 
    */
-  String encode() => encodeSegments(segments); 
-  
+  String encode() => encodeSegments(segments);
+
   JoseObject(this.header, this.payload);
-  
-  static String encodeSegments(Iterable<Base64EncodedData> segments) => 
-      segments.map((s) => s.encode()).join('.'); 
+
+  static String encodeSegments(Iterable<Base64EncodedData> segments) =>
+      segments.map((s) => s.encode()).join('.');
 }
 
 /**
@@ -35,15 +34,15 @@ abstract class JoseObject<H extends JoseHeader, P extends JosePayload> {
 abstract class Base64EncodedData {
   /// The decoded (or raw) form of the data as bytes
   Iterable<int> get decodedBytes;
-  
+
   /// The base64 encoded form of the data
   String encode() => bytesToBase64(decodedBytes);
-  
-  static Iterable<int> decodeToBytes(String base64String) 
-    => CryptoUtils.base64StringToBytes(padIfRequired(base64String));
 
-  static String decodeToString(String base64String) 
-    => new String.fromCharCodes(decodeToBytes(base64String));
+  static Iterable<int> decodeToBytes(String base64String) =>
+      CryptoUtils.base64StringToBytes(padIfRequired(base64String));
+
+  static String decodeToString(String base64String) =>
+      new String.fromCharCodes(decodeToBytes(base64String));
 }
 
 /**
@@ -52,24 +51,20 @@ abstract class Base64EncodedData {
  */
 abstract class Base64EncodedJson extends Base64EncodedData {
   Map toJson();
-  
+
   @override
   Iterable<int> get decodedBytes => JSON.encode(toJson()).codeUnits;
-  
-  static Map decodeToJson(String base64String) 
-    => JSON.decode(Base64EncodedData.decodeToString(base64String));
 
+  static Map decodeToJson(String base64String) =>
+      JSON.decode(Base64EncodedData.decodeToString(base64String));
 }
 
 /**
  * Base class for a [JoseObject]'s header
  */
-abstract class JoseHeader extends Base64EncodedJson {  
-}
+abstract class JoseHeader extends Base64EncodedJson {}
 
 /**
  * Base class for a [JoseObject]'s payload
  */
-abstract class JosePayload extends Base64EncodedJson {  
-}
-
+abstract class JosePayload extends Base64EncodedJson {}

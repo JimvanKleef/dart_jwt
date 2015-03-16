@@ -10,8 +10,10 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
   final String subject;
   final DateTime expiry;
   final DateTime issuedAt;
-
+  
   JwtClaimSet(this.issuer, this.subject, this.expiry, this.issuedAt, this.audience);
+
+  JwtClaimSet.build({this.issuer, this.subject, this.expiry, this.issuedAt, this.audience});
 
   JwtClaimSet.fromJson(Map json)
       : issuer = json['iss'],
@@ -22,6 +24,7 @@ class JwtClaimSet extends JosePayload with _JwtClaimSetMixin {
 
 }
 
+@deprecated
 class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
     implements JwtClaimSet {
   String issuer;
@@ -36,12 +39,12 @@ class MutableJwtClaimSet extends JosePayload with _JwtClaimSetMixin
 
 class JwtClaimSetValidationContext {
   final Duration expiryTolerance;
-
-  const JwtClaimSetValidationContext(
+  
+  const JwtClaimSetValidationContext( 
       { this.expiryTolerance: const Duration(seconds: 30) } );
 }
 
-abstract class _JwtClaimSetMixin  {
+abstract class _JwtClaimSetMixin {
   String get issuer;
   String get subject;
   List<String> get audience;
@@ -50,23 +53,24 @@ abstract class _JwtClaimSetMixin  {
 
   Map toJson() {
     return {
-      'iat' : encodeIntDate(issuedAt),
-      'exp' : encodeIntDate(expiry),
-      'iss' : issuer,
-      'sub' : subject,
-      'aud' : audience
+      'iat': encodeIntDate(issuedAt),
+      'exp': encodeIntDate(expiry),
+      'iss': issuer,
+      'sub': subject,
+      'aud': audience
     };
   }
 
   String toString() => 'JwtClaimSet[issuer=$issuer]';
-
+    
   Set<ConstraintViolation> validate(JwtClaimSetValidationContext validationContext) {
     final now = new DateTime.now();
     final diff = now.difference(expiry);
     if (diff > validationContext.expiryTolerance) {
-      return new Set()..add(new ConstraintViolation(
-          'JWT expired. Expiry ($expiry) is more than tolerance '
-          '(${validationContext.expiryTolerance}) before now ($now)'));
+      return new Set()
+        ..add(new ConstraintViolation(
+            'JWT expired. Expiry ($expiry) is more than tolerance '
+            '(${validationContext.expiryTolerance}) before now ($now)'));
     }
 
     return new Set.identity();
