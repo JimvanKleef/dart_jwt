@@ -24,15 +24,13 @@ class JwtClaimSet extends JosePayload {
         issuedAt = decodeIntDate(json['iat']),
         audience = (json['aud'] is String ? [json['aud']] : json['aud']);
 
-  Map toJson() {
-    return {
-      'iat': encodeIntDate(issuedAt),
-      'exp': encodeIntDate(expiry),
-      'iss': issuer,
-      'sub': subject,
-      'aud': audience
-    };
-  }
+  Map toJson() => {
+    'iat': encodeIntDate(issuedAt),
+    'exp': encodeIntDate(expiry),
+    'iss': issuer,
+    'sub': subject,
+    'aud': audience
+  };
 
   String toString() => 'JwtClaimSet[issuer=$issuer]';
 
