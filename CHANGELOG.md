@@ -1,4 +1,11 @@
+## 0.4.0
+
+* Abstracted out a base JwtClaimSet. Old JwtClaimSet is now renamed OpenIdJwtClaimSet (breaking)
+* Removed MutableJwtClaimSet (breaking)
+* Added MapJwtClaimSet
+
 ## 0.3.0
+
 * Audience is now a List (breaking)
 * MutableJwtClaimSet now deprecated
 
