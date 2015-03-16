@@ -6,6 +6,14 @@ import 'util.dart';
 
 abstract class JwtClaimSet extends JosePayload {}
 
+class MapJwtClaimSet extends JwtClaimSet {
+  final Map json;
+
+  MapJwtClaimSet(this.json);
+
+  Map toJson() => json;
+}
+
 class OpenIdJwtClaimSet extends JwtClaimSet {
   final String issuer;
   final List<String> audience;
