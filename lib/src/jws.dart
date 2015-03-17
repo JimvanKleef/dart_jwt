@@ -94,14 +94,14 @@ class JwsType {
   const JwsType._internal(this.name);
 
   static JwsType lookup(String name) {
-    return checkNotNull(_supportedTypes[name]);
+    checkNotNull(name);
+    return checkNotNull(_supportedTypes[name.toUpperCase()]);
   }
 
   static const JwsType JWT = const JwsType._internal('JWT');
 
   static Map<String, JwsType> _supportedTypes = {
     null: JWT,
-    'jwt': JWT, // some OIDC providers use lowercase
     'JWT': JWT
   };
 
