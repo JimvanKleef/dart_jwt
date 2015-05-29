@@ -60,7 +60,7 @@ class JwsHeader extends JoseHeader {
   }
 
   JwsHeader._fromJson(JsonParser p) : this.build(
-          type: p.get('type', (v) => JwsType.lookup(v)),
+          type: p.get('typ', (v) => JwsType.lookup(v)),
           algorithm: p.get('alg', (v) => JsonWebAlgorithm.lookup(v)),
           jwkSetUrl: p.get('jku', (v) => Uri.parse(v)),
           keyId: p.get('kid'),
@@ -155,7 +155,7 @@ class JsonParser {
   JsonParser(this._json);
 
   get(String key, [transform(v) = _noopXform]) {
-    final value = _json['key'];
+    final value = _json[key];
     return value != null ? transform(value) : null;
   }
 }
