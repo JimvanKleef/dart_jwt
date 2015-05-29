@@ -45,18 +45,37 @@ abstract class JsonWebSignature<P extends JosePayload>
 class JwsHeader extends JoseHeader {
   final JwsType type;
   final JsonWebAlgorithm algorithm;
+  final Uri jwkSetUrl;
+  final String keyId;
+  final String x509CertificateThumbprint;
 
-  JwsHeader(this.type, this.algorithm);
+  @deprecated
+  JwsHeader(JwsType type, JsonWebAlgorithm algorithm)
+      : this.build(type: type, algorithm: algorithm);
 
-  JwsHeader.fromJson(Map json)
-      : this(JwsType.lookup(json['typ']), JsonWebAlgorithm.lookup(json['alg']));
+  JwsHeader.build({this.type, this.algorithm, this.jwkSetUrl, this.keyId,
+      this.x509CertificateThumbprint}) {
+    checkNotNull(type);
+    checkNotNull(algorithm);
+  }
+
+  JwsHeader._fromJson(JsonParser p) : this.build(
+          type: p.get('typ', (v) => JwsType.lookup(v)),
+          algorithm: p.get('alg', (v) => JsonWebAlgorithm.lookup(v)),
+          jwkSetUrl: p.get('jku', (v) => Uri.parse(v)),
+          keyId: p.get('kid'),
+          x509CertificateThumbprint: p.get('x5t'));
+
+  JwsHeader.fromJson(Map json) : this._fromJson(new JsonParser(json));
 
   JwsHeader.decode(String base64String)
       : this.fromJson(Base64EncodedJson.decodeToJson(base64String));
 
-  Map toJson() {
-    return {'alg': algorithm.name, 'typ': type.name};
-  }
+  Map toJson() => buildJson({'alg': algorithm.name, 'typ': type.name})
+      .add('jku', jwkSetUrl, (Uri u) => u.toString())
+      .add('kid', keyId)
+      .add('x5t', x509CertificateThumbprint)
+      .build();
 
   String toString() => 'JwsHeader[type=$type, algorithm=$algorithm]';
 
@@ -94,16 +113,13 @@ class JwsType {
   const JwsType._internal(this.name);
 
   static JwsType lookup(String name) {
-    return checkNotNull(_supportedTypes[name]);
+    checkNotNull(name);
+    return checkNotNull(_supportedTypes[name.toUpperCase()]);
   }
 
   static const JwsType JWT = const JwsType._internal('JWT');
 
-  static Map<String, JwsType> _supportedTypes = {
-    null: JWT,
-    'jwt': JWT, // some OIDC providers use lowercase
-    'JWT': JWT
-  };
+  static Map<String, JwsType> _supportedTypes = {null: JWT, 'JWT': JWT};
 
   String toString() => '$name';
 }
@@ -112,4 +128,34 @@ class JwsValidationContext {
   final JwaSignatureContext signatureContext;
 
   JwsValidationContext(this.signatureContext);
+}
+
+_noopXform(v) => v;
+
+JsonBuilder buildJson([Map json]) => new JsonBuilder(json);
+
+class JsonBuilder {
+  final Map _json;
+
+  JsonBuilder(Map json) : this._json = json != null ? json : {};
+
+  JsonBuilder add(String key, value, [transform(v) = _noopXform]) {
+    if (value != null) {
+      _json[key] = transform(value);
+    }
+    return this;
+  }
+
+  Map build() => _json;
+}
+
+class JsonParser {
+  final Map _json;
+
+  JsonParser(this._json);
+
+  get(String key, [transform(v) = _noopXform]) {
+    final value = _json[key];
+    return value != null ? transform(value) : null;
+  }
 }
