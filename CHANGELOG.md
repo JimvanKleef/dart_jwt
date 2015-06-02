@@ -1,3 +1,7 @@
+## 0.4.1
+
+* widen dependency ranges
+
 ## 0.4.0
 
 * Abstracted out a base JwtClaimSet. Old JwtClaimSet is now renamed OpenIdJwtClaimSet (breaking)
