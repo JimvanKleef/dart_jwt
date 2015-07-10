@@ -1,7 +1,7 @@
 library jwt.jwa.test;
 
 import 'dart:typed_data';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:bignum/bignum.dart';
 import 'package:crypto/crypto.dart';
 import 'package:cipher/cipher.dart';
