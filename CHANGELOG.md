@@ -1,3 +1,7 @@
+## 0.4.2
+
+* changed to test package
+
 ## 0.4.1
 
 * widen dependency ranges

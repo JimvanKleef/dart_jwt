@@ -78,7 +78,8 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
 
   factory _JwtInJws(T claimSet, JwaSignatureContext signatureContext,
       JsonWebAlgorithm algorithm) {
-    final JwsHeader header = new JwsHeader(JwsType.JWT, algorithm);
+    final JwsHeader header =
+        new JwsHeader.build(type: JwsType.JWT, algorithm: algorithm);
     final String signingInput = JoseObject.encodeSegments([header, claimSet]);
 
     final JwsSignature signature = new JwsSignature.create(
