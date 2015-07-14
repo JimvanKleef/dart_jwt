@@ -1,6 +1,6 @@
 library jwt.jwt.test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:dart_jwt/src/jwa.dart';
 import 'package:dart_jwt/src/jwt.dart';
 import 'package:dart_jwt/src/validation_constraint.dart';
