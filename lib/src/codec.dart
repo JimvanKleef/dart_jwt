@@ -8,6 +8,17 @@ import 'package:dart_jwt/src/jws.dart';
 typedef JsonWebToken<CS> JwtTokenDecoder<CS extends JwtClaimSet>(
     String jwtToken, {JwsValidationContext validationContext});
 
+typedef CS JwtClaimSetDecoder<CS extends JwtClaimSet>(Map claimSetJson,
+    {JwsValidationContext validationContext});
+
+JwtTokenDecoder<JwtClaimSet> defaultJwtTokenDecoder(
+    JwtClaimSetDecoder claimSetDecoder) {
+  return (String jwtToken,
+      {JwsValidationContext validationContext}) => new JsonWebToken.decode(
+      jwtToken,
+      validationContext: validationContext, claimSetParser: claimSetDecoder);
+}
+
 class JwtCodec<CS extends JwtClaimSet> extends Codec<JsonWebToken<CS>, String> {
   final Converter<JsonWebToken<CS>, String> encoder = new JwtEncoder<CS>();
   final Converter<String, JsonWebToken<CS>> decoder;
