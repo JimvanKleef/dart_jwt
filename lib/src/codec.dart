@@ -28,6 +28,10 @@ class JwtCodec<CS extends JwtClaimSet> extends Codec<JsonWebToken<CS>, String> {
   JwtCodec.simple(JwtTokenDecoder<CS> decoder,
       {JwsValidationContextFactory contextFactory})
       : this(new JwtDecoder(decoder, contextFactory));
+
+  JwtCodec.def(JwtClaimSetDecoder<CS> decoder,
+      {JwsValidationContextFactory contextFactory})
+      : this(new JwtDecoder(defaultJwtTokenDecoder(decoder), contextFactory));
 }
 
 class JwtDecoder<CS extends JwtClaimSet>
