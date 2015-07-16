@@ -124,6 +124,8 @@ class JwsType {
   String toString() => '$name';
 }
 
+typedef JwsValidationContext JwsValidationContextFactory();
+
 class JwsValidationContext {
   final JwaSignatureContext signatureContext;
 
