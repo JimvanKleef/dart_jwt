@@ -46,5 +46,5 @@ class JwtDecoder<CS extends JwtClaimSet>
 class JwtEncoder<CS extends JwtClaimSet>
     extends Converter<JsonWebToken<CS>, String> {
   @override
-  String convert(JsonWebToken<CS> input) => JSON.encode(input);
+  String convert(JsonWebToken<CS> input) => input.encode();
 }
