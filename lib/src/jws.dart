@@ -32,6 +32,12 @@ abstract class JsonWebSignature<P extends JosePayload>
 
   Set<ConstraintViolation> validateSignature(
       JwsValidationContext validationContext) {
+    if (!validationContext.supportedAlgorithms.contains(header.algorithm)) {
+      return new Set.from([
+        new ConstraintViolation('unsupported algorithm ${header.algorithm}')
+      ]);
+    }
+
     return signature.validate(
         _signingInput, header.algorithm, validationContext.signatureContext);
   }
@@ -128,8 +134,13 @@ typedef JwsValidationContext JwsValidationContextFactory();
 
 class JwsValidationContext {
   final JwaSignatureContext signatureContext;
+  final Set<JsonWebAlgorithm> supportedAlgorithms;
 
-  JwsValidationContext(this.signatureContext);
+  JwsValidationContext(this.signatureContext,
+      {Set<JsonWebAlgorithm> supportedAlgorithms})
+      : this.supportedAlgorithms = supportedAlgorithms != null
+          ? supportedAlgorithms
+          : new Set.from([JsonWebAlgorithm.HS256]);
 }
 
 _noopXform(v) => v;
