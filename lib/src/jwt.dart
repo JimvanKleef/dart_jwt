@@ -52,8 +52,8 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
       JwsValidationContext validationContext, ClaimSetParser claimSetParser) {
     final base64Segs = jwtToken.split('.');
     if (base64Segs.length != 3) throw new ArgumentError(
-        "JWS string must be in form Header.Payload.Signature.\n"
-        "$jwtToken\nis invalid");
+        "JWS tokens must be in form '<header>.<payload>.<signature>'.\n"
+        "Value: '$jwtToken' is invalid");
 
     final header = new JwsHeader.decode(base64Segs.first);
     final claimSet =
