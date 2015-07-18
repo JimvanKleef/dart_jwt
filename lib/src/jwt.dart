@@ -19,7 +19,12 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
       {JwsValidationContext validationContext,
       ClaimSetParser claimSetParser: openIdClaimSetParser}) {
     // TODO: figure out if the jwt is in a jws or jwe structure. Assuming jws for now
-    return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
+    try {
+      return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
+    } on FormatException catch (e) {
+      throw new ArgumentError.value(
+          jwtToken, 'jwtToken', 'Could not parse jwtToken - ${e.message}');
+    }
   }
 
   factory JsonWebToken.jws(T claimSet, JwaSignatureContext signatureContext,
