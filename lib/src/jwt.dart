@@ -19,7 +19,12 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
       {JwsValidationContext validationContext,
       ClaimSetParser claimSetParser: openIdClaimSetParser}) {
     // TODO: figure out if the jwt is in a jws or jwe structure. Assuming jws for now
-    return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
+    try {
+      return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
+    } on FormatException catch (e) {
+      throw new ArgumentError.value(
+          jwtToken, 'jwtToken', 'Could not parse jwtToken - ${e.message}');
+    }
   }
 
   factory JsonWebToken.jws(T claimSet, JwaSignatureContext signatureContext,
@@ -52,8 +57,8 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
       JwsValidationContext validationContext, ClaimSetParser claimSetParser) {
     final base64Segs = jwtToken.split('.');
     if (base64Segs.length != 3) throw new ArgumentError(
-        "JWS string must be in form Header.Payload.Signature.\n"
-        "$jwtToken\nis invalid");
+        "JWS tokens must be in form '<header>.<payload>.<signature>'.\n"
+        "Value: '$jwtToken' is invalid");
 
     final header = new JwsHeader.decode(base64Segs.first);
     final claimSet =
