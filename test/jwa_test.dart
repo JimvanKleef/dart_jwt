@@ -142,7 +142,6 @@ K+g1U8zsBcMm15Hf+bJnIr+A
   });
 
   group('[Assymetric RS256]', () {
-
     // This is the public key that corresponds to the private key
     var rsaPublicKeyPkcs1Pem = '''
 MIIBCgKCAQEAqiwZWsX8I+5EQlnOJVOBvsxiDd33+9OYJUM7WMn3Vvibg8M2qgWtIZUBNy8LB3G
