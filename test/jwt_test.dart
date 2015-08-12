@@ -86,12 +86,13 @@ void main() {
   });
 
   group('[validation]', () {
-    OpenIdJwtClaimSet claimSet(int secondsBeforeNow) =>
+    OpenIdJwtClaimSet claimSet(
+            int secondsBeforeNow) =>
         new OpenIdJwtClaimSet.build(
             issuer: issuer,
             subject: subject,
-            expiry: new DateTime.now()
-                .subtract(new Duration(seconds: secondsBeforeNow)),
+            expiry: new DateTime.now().subtract(
+                new Duration(milliseconds: secondsBeforeNow * 1000 - 1)),
             issuedAt: issuedAt);
 
     Set<ConstraintViolation> violations(int secondsBeforeNow) =>

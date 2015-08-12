@@ -3,6 +3,7 @@ library jwt.jwt_claimset;
 import 'jose.dart';
 import 'validation_constraint.dart';
 import 'util.dart';
+import 'dart:convert';
 
 abstract class JwtClaimSet extends JosePayload {
   Set<ConstraintViolation> validate(
@@ -70,7 +71,7 @@ class OpenIdJwtClaimSet extends JwtClaimSet {
     'aud': audience
   };
 
-  String toString() => 'JwtClaimSet[issuer=$issuer]';
+  String toString() => JSON.encode(this);
 
   Set<ConstraintViolation> validate(
       JwtClaimSetValidationContext validationContext) {
