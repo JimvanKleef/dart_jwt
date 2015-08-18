@@ -2,7 +2,7 @@ author: Anders Holmgren<aholmgren@atlassian.com>
 description: An implementation of [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19) standard
 homepage: https://bitbucket.org/aholmgren/dart-jwt
 name: dart_jwt
-version: 0.4.3
+version: 0.4.4
 dependencies: 
   cipher: '>=0.7.1 <0.8.0'
   crypto: '>=0.9.0 <0.10.0'

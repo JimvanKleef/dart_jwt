@@ -59,8 +59,9 @@ class JwsHeader extends JoseHeader {
   JwsHeader(JwsType type, JsonWebAlgorithm algorithm)
       : this.build(type: type, algorithm: algorithm);
 
-  JwsHeader.build({this.type, this.algorithm, this.jwkSetUrl, this.keyId,
-      this.x509CertificateThumbprint}) {
+  JwsHeader.build({JwsType type: JwsType.JWT, this.algorithm, this.jwkSetUrl,
+      this.keyId, this.x509CertificateThumbprint}) :
+        this.type = type != null ? type : JwsType.JWT {
     checkNotNull(type);
     checkNotNull(algorithm);
   }
