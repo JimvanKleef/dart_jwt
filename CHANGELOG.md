@@ -1,3 +1,7 @@
+## 0.4.4
+
+* restored optionality of `typ`
+
 ## 0.4.2
 
 * changed to test package
