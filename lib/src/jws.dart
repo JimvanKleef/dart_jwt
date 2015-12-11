@@ -62,7 +62,7 @@ class JwsHeader extends JoseHeader {
   JwsHeader.build({JwsType type: JwsType.JWT, this.algorithm, this.jwkSetUrl,
       this.keyId, this.x509CertificateThumbprint}) :
         this.type = type != null ? type : JwsType.JWT {
-    checkNotNull(type);
+    checkNotNull(this.type);
     checkNotNull(algorithm);
   }
 
