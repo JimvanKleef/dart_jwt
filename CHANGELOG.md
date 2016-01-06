@@ -1,3 +1,7 @@
+## 0.4.5
+
+* Fails parsing JWT headers without optional "typ" header parameter (2)
+
 ## 0.4.4
 
 * restored optionality of `typ`
