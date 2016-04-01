@@ -1,11 +1,14 @@
 library jwt.jwa;
 
+import 'dart:convert';
 import 'dart:typed_data';
-import 'util.dart';
-import 'package:crypto/crypto.dart';
+
 import 'package:cipher/cipher.dart';
 import 'package:cipher/impl/base.dart';
+import 'package:crypto/crypto.dart' hide BASE64;
 import 'package:logging/logging.dart';
+
+import 'util.dart';
 import 'validation_constraint.dart';
 
 Logger _log = new Logger("jwt.jwa");
@@ -40,9 +43,9 @@ abstract class JsonWebAlgorithm<T extends JwaSignatureContext> {
      * to reencode here. Better to avoid the decode in the first place
      */
     final raw = _rawSign(signingInput, signatureContext);
-    final sig = CryptoUtils.bytesToBase64(raw, urlSafe: true);
+    final sig = BASE64.encode(raw);
     _log.finest('signature is $sig');
-    return CryptoUtils.base64StringToBytes(sig);
+    return BASE64.decode(sig);
   }
 
   Set<ConstraintViolation> validateSignature(
@@ -82,14 +85,14 @@ class _HS256JsonWebAlgorithm
       String signingInput, JwaSymmetricKeySignatureContext signatureContext) {
     _log.finest(
         'signingInput: $signingInput, sharedSecret: ${signatureContext.symmetricKey}');
-    final hmac =
-        new HMAC(new SHA256(), signatureContext.symmetricKey.codeUnits);
-    hmac.add(signingInput.codeUnits);
-    return hmac.digest;
+    final hmac = new Hmac(sha256, signatureContext.symmetricKey.codeUnits);
+
+    return hmac.convert(signingInput.codeUnits).bytes;
   }
 
   @override
-  Set<ConstraintViolation> _internalValidateSignature(String signingInput,
+  Set<ConstraintViolation> _internalValidateSignature(
+      String signingInput,
       List<int> signatureBytes,
       JwaSymmetricKeySignatureContext signatureContext) {
     List<int> result = this.sign(signingInput, signatureContext);
@@ -97,9 +100,9 @@ class _HS256JsonWebAlgorithm
     return _signaturesMatch(result, signatureBytes)
         ? new Set.identity()
         : (new Set()
-      ..add(new ConstraintViolation('signatures do not match. ' +
-          'Received: ${bytesToBase64(signatureBytes)} vs ' +
-          'Calculated: ${bytesToBase64(result)}')));
+          ..add(new ConstraintViolation('signatures do not match. ' +
+              'Received: ${bytesToBase64(signatureBytes)} vs ' +
+              'Calculated: ${bytesToBase64(result)}')));
   }
 
   bool _signaturesMatch(List<int> result, List<int> signatureBytes) {
@@ -119,8 +122,8 @@ class _RS256JsonWebAlgorithm extends JsonWebAlgorithm<JwaRsaSignatureContext> {
   @override
   List<int> _rawSign(
       String signingInput, JwaRsaSignatureContext signatureContext) {
-    if (signatureContext.rsaPrivateKey ==
-        null) throw new ArgumentError.notNull("signatureContext.rsaPrivateKey");
+    if (signatureContext.rsaPrivateKey == null)
+      throw new ArgumentError.notNull("signatureContext.rsaPrivateKey");
 
     var privParams = new PrivateKeyParameter(signatureContext.rsaPrivateKey);
     var signParams =
@@ -134,8 +137,8 @@ class _RS256JsonWebAlgorithm extends JsonWebAlgorithm<JwaRsaSignatureContext> {
   @override
   Set<ConstraintViolation> _internalValidateSignature(String signingInput,
       List<int> signatureBytes, JwaRsaSignatureContext signatureContext) {
-    if (signatureContext.rsaPublicKey ==
-        null) throw new ArgumentError.notNull("signatureContext.rsaPublicKey");
+    if (signatureContext.rsaPublicKey == null)
+      throw new ArgumentError.notNull("signatureContext.rsaPublicKey");
 
     var publicParams = new PublicKeyParameter(signatureContext.rsaPublicKey);
     var signParams = new ParametersWithRandom(
@@ -147,6 +150,6 @@ class _RS256JsonWebAlgorithm extends JsonWebAlgorithm<JwaRsaSignatureContext> {
     return ok
         ? new Set.identity()
         : (new Set()
-      ..add(new ConstraintViolation('RSA signature failed validation.')));
+          ..add(new ConstraintViolation('RSA signature failed validation.')));
   }
 }
