@@ -1,9 +1,10 @@
 library jwt.util;
 
+//import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 String bytesToBase64(Iterable<int> bytes, {bool stringPadding: true}) {
-  return unpadIfRequired(CryptoUtils.bytesToBase64(bytes, urlSafe: true),
+  return unpadIfRequired(const Base64Codec(urlSafe: true).encode(bytes),
       stringPadding: stringPadding);
 }
 

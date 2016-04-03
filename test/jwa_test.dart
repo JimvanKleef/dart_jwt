@@ -8,6 +8,7 @@ import 'package:cipher/cipher.dart';
 import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_jwt/src/jws.dart';
 import 'package:dart_jwt/src/jwa.dart';
+//import 'dart:convert';
 
 void main() {
   group('[HS256]', () {
@@ -48,7 +49,7 @@ void main() {
 
   RSAPublicKey _pkcs1PublicKey(String keyString) {
     var key_bytes =
-        new Uint8List.fromList(CryptoUtils.base64StringToBytes(keyString));
+        new Uint8List.fromList(const Base64Codec(urlSafe: true).decode(keyString));
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     var modulus = (seq.elements[0] as ASN1Integer).intValue;
@@ -60,7 +61,7 @@ void main() {
 
   RSAPrivateKey _pkcs1PrivateKey(String keyString) {
     var key_bytes =
-        new Uint8List.fromList(CryptoUtils.base64StringToBytes(keyString));
+        new Uint8List.fromList(const Base64Codec(urlSafe: true).decode(keyString));
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     var modulus = (seq.elements[1] as ASN1Integer).intValue;
@@ -74,7 +75,7 @@ void main() {
 
   RSAPrivateKey _pkcs8PrivateKey(String keyString) {
     var key_bytes =
-        new Uint8List.fromList(CryptoUtils.base64StringToBytes(keyString));
+        new Uint8List.fromList(const Base64Codec(urlSafe: true).decode(keyString));
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     ASN1OctetString os = seq.elements[2];
@@ -123,7 +124,7 @@ HZf48zF7B158wdSXno1Rd1vIZoHkDZYlWxjBAk60LZLzggiYnpNpL/JJh+SI/CYz
 K+g1U8zsBcMm15Hf+bJnIr+A
 ''';
 
-    var rsaPrivateKey = _pkcs8PrivateKey(rsaPrivateKeyPkcs8Pem);
+    RSAPrivateKey rsaPrivateKey() => _pkcs8PrivateKey(rsaPrivateKeyPkcs8Pem);
 
     String sign(String signingInput, RSAPrivateKey rsaPrivateKey) {
       final jwsSignature = new JwsSignature.create(signingInput,
@@ -136,7 +137,7 @@ K+g1U8zsBcMm15Hf+bJnIr+A
       expect(sign('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.'
           'eyJpYXQiOjEzOTQxNjYxODcsImV4cCI6MTM5NDE2NjM2NywiaXNzIjoiamly'
           'YTphZTM5MGQyOS0zMWIyLTRjMTItYTcxOS05ZGY2NGUzZTkyYjciLCJzdWIi'
-          'OiJhZG1pbiIsImF1ZCI6ImZvb2JhciJ9', rsaPrivateKey), equals(
+          'OiJhZG1pbiIsImF1ZCI6ImZvb2JhciJ9', rsaPrivateKey()), equals(
           'YUU-mhNuoVHti6ZPA5WcNVxBk_Y5m2grTSW1Biea0p9IcWao7QplG4ZMcnNCRW_2uYgENakUVvKFF7dSR0srt435OCznJCHgefsAAtSwKgrTZetThBsrc9NBxys-C0bp-u6UpUgbNUnZa-JH7_VElkdTsnqgvtCGo3xGtTeuSoPKQMu7aE7eMS2qof4QX-H0Ym1zrC4rWKf9sO4gdOyh9CmoWYHwkPrlc3IMwsm-1yxOUcNZvPRy63-hq7bsKZKc_MvGjjk7zpBO8K6PRWLiHmi7hilQKMw8iGskAtj7OWp_YidvBbem5TfM8BQxncGbtXySn6ygdP6M9DuJgxWA8w'));
     });
   });
@@ -185,13 +186,13 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
         'YTphZTM5MGQyOS0zMWIyLTRjMTItYTcxOS05ZGY2NGUzZTkyYjciLCJzdWIi'
         'OiJhZG1pbiIsImF1ZCI6ImZvb2JhciJ9';
 
-    var rsaPrivateKey = _pkcs1PrivateKey(rsaPrivateKeyPkcs1Pem);
-    var rsaPublicKey = _pkcs1PublicKey(rsaPublicKeyPkcs1Pem);
+    RSAPrivateKey rsaPrivateKey() => _pkcs1PrivateKey(rsaPrivateKeyPkcs1Pem);
+    RSAPublicKey rsaPublicKey() => _pkcs1PublicKey(rsaPublicKeyPkcs1Pem);
 
     test('sign', () {
       final jwsSignature = new JwsSignature.create(signingInput,
           JsonWebAlgorithm.RS256,
-          new JwaRsaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey));
+          new JwaRsaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey()));
       var signature = jwsSignature.encode();
       expect(signature, equals(
           'WqJ6jfYd2Pnp9vxn8CcVsbxwB1oAkIdH_QR9l1mF4-N__0JAhwNdcE'
@@ -463,7 +464,7 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
       final jwsSignature = new JwsSignature(signatureBytes);
       var violations = jwsSignature.validate(signingInput,
           JsonWebAlgorithm.RS256,
-          new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey));
+          new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey()));
       expect(violations.length, equals(0));
     });
   });
