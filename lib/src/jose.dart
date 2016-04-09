@@ -1,14 +1,14 @@
 library jwt.jose;
 
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
+import 'dart:convert' hide Base64Codec;
+import 'package:crypto/crypto.dart' show Base64Codec;
 import 'util.dart';
 
 /**
  * Base class for objects defined in the Jose specs that are strings made up of
- * base64 encoded [segments]. i.e. when encoded they are of the form 
+ * base64 encoded [segments]. i.e. when encoded they are of the form
  * `<base 64 encoded header>.<base64 encoded payload>.<another base64 encoded segment>`
- *  
+ *
  * At minimum they have a [header] and a [payload] as the first two segments.
  */
 abstract class JoseObject<H extends JoseHeader, P extends JosePayload> {
@@ -17,7 +17,7 @@ abstract class JoseObject<H extends JoseHeader, P extends JosePayload> {
   Iterable<Base64EncodedData> get segments;
 
   /**
-   * Returns the encoded form of the object 
+   * Returns the encoded form of the object
    */
   String encode() => encodeSegments(segments);
 
@@ -39,7 +39,7 @@ abstract class Base64EncodedData {
   String encode() => bytesToBase64(decodedBytes);
 
   static Iterable<int> decodeToBytes(String base64String) =>
-      CryptoUtils.base64StringToBytes(padIfRequired(base64String));
+      const Base64Codec(urlSafe: true).decode(padIfRequired(base64String));
 
   static String decodeToString(String base64String) =>
       new String.fromCharCodes(decodeToBytes(base64String));
