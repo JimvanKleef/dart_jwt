@@ -1,3 +1,7 @@
+## 0.4.6
+
+- updated crypto dependency with required code changes
+
 ## 0.4.5
 
 * Fails parsing JWT headers without optional "typ" header parameter (2)
