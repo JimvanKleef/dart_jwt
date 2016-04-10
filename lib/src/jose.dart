@@ -1,7 +1,7 @@
 library jwt.jose;
 
 import 'dart:convert' hide Base64Codec;
-import 'package:crypto/crypto.dart' show Base64Codec;
+
 import 'util.dart';
 
 /**
@@ -39,7 +39,7 @@ abstract class Base64EncodedData {
   String encode() => bytesToBase64(decodedBytes);
 
   static Iterable<int> decodeToBytes(String base64String) =>
-      const Base64Codec(urlSafe: true).decode(padIfRequired(base64String));
+      base64ToBytes(padIfRequired(base64String));
 
   static String decodeToString(String base64String) =>
       new String.fromCharCodes(decodeToBytes(base64String));

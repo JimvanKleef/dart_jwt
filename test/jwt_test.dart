@@ -1,9 +1,9 @@
 library jwt.jwt.test;
 
-import 'package:test/test.dart';
 import 'package:dart_jwt/src/jwa.dart';
 import 'package:dart_jwt/src/jwt.dart';
 import 'package:dart_jwt/src/validation_constraint.dart';
+import 'package:test/test.dart';
 
 void main() {
   final String sharedSecret = '3ab90b11-d7bd-4097-958f-01b7ac4e985f';

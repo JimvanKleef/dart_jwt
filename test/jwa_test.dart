@@ -1,19 +1,20 @@
 library jwt.jwa.test;
 
 import 'dart:typed_data';
-import 'package:test/test.dart';
-import 'package:bignum/bignum.dart';
-import 'package:crypto/crypto.dart';
-import 'package:cipher/cipher.dart';
+
 import 'package:asn1lib/asn1lib.dart';
-import 'package:dart_jwt/src/jws.dart';
+import 'package:bignum/bignum.dart';
+import 'package:cipher/cipher.dart';
 import 'package:dart_jwt/src/jwa.dart';
-//import 'dart:convert';
+import 'package:dart_jwt/src/jws.dart';
+import 'package:dart_jwt/src/util.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('[HS256]', () {
     String sign(String signingInput, String sharedSecret) {
-      final jwsSignature = new JwsSignature.create(signingInput,
+      final jwsSignature = new JwsSignature.create(
+          signingInput,
           JsonWebAlgorithm.HS256,
           new JwaSymmetricKeySignatureContext(sharedSecret));
       return jwsSignature.encode();
@@ -21,7 +22,9 @@ void main() {
 
     // TODO: very adhoc - just two examples
     test('case 1', () {
-      expect(sign('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+      expect(
+          sign(
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
               'eyJpYXQiOjEzOTU3MjUxMzYsImV4cCI6MTM5NTcyNTMxNiwiaXNzIjoiZm9v'
               'LWJhci1hZGRvbiIsInFzaCI6IjEzODU2Zjk3ZWU3ZTE2ZjE1YmFmY2QxYjZh'
               'MzE3MDQ4NWE2Mjk2NGIzYWU5MTU0ZTMyZWUyNjdhNjA4OTM0M2MifQ',
@@ -29,7 +32,9 @@ void main() {
           equals('s4WJ6h4glblp-GiVVAOuGxQRQ0Sb3wpnRvKXbmZXgT8'));
     });
     test('case 2', () {
-      expect(sign('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+      expect(
+          sign(
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
               'eyJpYXQiOjEzOTU3Mjg5MzcsImV4cCI6MTM5NTcyOTExNywiaXNzIjoiZm9v'
               'LWJhci1hZGRvbiIsInFzaCI6IjEzODU2Zjk3ZWU3ZTE2ZjE1YmFmY2QxYjZh'
               'MzE3MDQ4NWE2Mjk2NGIzYWU5MTU0ZTMyZWUyNjdhNjA4OTM0M2MifQ',
@@ -37,7 +42,9 @@ void main() {
           equals('NDrBMAzry_r-VRFM2r0hVaKAQdFtlTht_Qs4Mn5l0MI'));
     });
     test('case 3 bitbucket', () {
-      expect(sign('eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.'
+      expect(
+          sign(
+              'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.'
               'eyJpc3MiOiAiY29ubmVjdGlvbjoxNjYiLCAiaWF0IjogMTQxMDkwNTA0Miwg'
               'InFzaCI6ICI4Y2VmMTcyNDM5ZWM2Y2ZhNGZlOGM1OGZiZTZkNDU0ODgzOGRh'
               'YjkwODFjYWM0YzhhNmIzZTNkNjUzNDlmMzg3IiwgImF1ZCI6ICJjb25uZWN0'
@@ -48,8 +55,7 @@ void main() {
   });
 
   RSAPublicKey _pkcs1PublicKey(String keyString) {
-    var key_bytes =
-        new Uint8List.fromList(const Base64Codec(urlSafe: true).decode(keyString));
+    var key_bytes = new Uint8List.fromList(base64ToBytes(keyString));
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     var modulus = (seq.elements[0] as ASN1Integer).intValue;
@@ -60,8 +66,7 @@ void main() {
   }
 
   RSAPrivateKey _pkcs1PrivateKey(String keyString) {
-    var key_bytes =
-        new Uint8List.fromList(const Base64Codec(urlSafe: true).decode(keyString));
+    var key_bytes = new Uint8List.fromList(base64ToBytes(keyString));
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     var modulus = (seq.elements[1] as ASN1Integer).intValue;
@@ -74,8 +79,7 @@ void main() {
   }
 
   RSAPrivateKey _pkcs8PrivateKey(String keyString) {
-    var key_bytes =
-        new Uint8List.fromList(const Base64Codec(urlSafe: true).decode(keyString));
+    var key_bytes = new Uint8List.fromList(base64ToBytes(keyString));
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     ASN1OctetString os = seq.elements[2];
@@ -127,18 +131,23 @@ K+g1U8zsBcMm15Hf+bJnIr+A
     RSAPrivateKey rsaPrivateKey() => _pkcs8PrivateKey(rsaPrivateKeyPkcs8Pem);
 
     String sign(String signingInput, RSAPrivateKey rsaPrivateKey) {
-      final jwsSignature = new JwsSignature.create(signingInput,
+      final jwsSignature = new JwsSignature.create(
+          signingInput,
           JsonWebAlgorithm.RS256,
           new JwaRsaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey));
       return jwsSignature.encode();
     }
 
     test('simple', () {
-      expect(sign('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.'
-          'eyJpYXQiOjEzOTQxNjYxODcsImV4cCI6MTM5NDE2NjM2NywiaXNzIjoiamly'
-          'YTphZTM5MGQyOS0zMWIyLTRjMTItYTcxOS05ZGY2NGUzZTkyYjciLCJzdWIi'
-          'OiJhZG1pbiIsImF1ZCI6ImZvb2JhciJ9', rsaPrivateKey()), equals(
-          'YUU-mhNuoVHti6ZPA5WcNVxBk_Y5m2grTSW1Biea0p9IcWao7QplG4ZMcnNCRW_2uYgENakUVvKFF7dSR0srt435OCznJCHgefsAAtSwKgrTZetThBsrc9NBxys-C0bp-u6UpUgbNUnZa-JH7_VElkdTsnqgvtCGo3xGtTeuSoPKQMu7aE7eMS2qof4QX-H0Ym1zrC4rWKf9sO4gdOyh9CmoWYHwkPrlc3IMwsm-1yxOUcNZvPRy63-hq7bsKZKc_MvGjjk7zpBO8K6PRWLiHmi7hilQKMw8iGskAtj7OWp_YidvBbem5TfM8BQxncGbtXySn6ygdP6M9DuJgxWA8w'));
+      expect(
+          sign(
+              'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.'
+              'eyJpYXQiOjEzOTQxNjYxODcsImV4cCI6MTM5NDE2NjM2NywiaXNzIjoiamly'
+              'YTphZTM5MGQyOS0zMWIyLTRjMTItYTcxOS05ZGY2NGUzZTkyYjciLCJzdWIi'
+              'OiJhZG1pbiIsImF1ZCI6ImZvb2JhciJ9',
+              rsaPrivateKey()),
+          equals(
+              'YUU-mhNuoVHti6ZPA5WcNVxBk_Y5m2grTSW1Biea0p9IcWao7QplG4ZMcnNCRW_2uYgENakUVvKFF7dSR0srt435OCznJCHgefsAAtSwKgrTZetThBsrc9NBxys-C0bp-u6UpUgbNUnZa-JH7_VElkdTsnqgvtCGo3xGtTeuSoPKQMu7aE7eMS2qof4QX-H0Ym1zrC4rWKf9sO4gdOyh9CmoWYHwkPrlc3IMwsm-1yxOUcNZvPRy63-hq7bsKZKc_MvGjjk7zpBO8K6PRWLiHmi7hilQKMw8iGskAtj7OWp_YidvBbem5TfM8BQxncGbtXySn6ygdP6M9DuJgxWA8w'));
     });
   });
 
@@ -190,16 +199,18 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
     RSAPublicKey rsaPublicKey() => _pkcs1PublicKey(rsaPublicKeyPkcs1Pem);
 
     test('sign', () {
-      final jwsSignature = new JwsSignature.create(signingInput,
+      final jwsSignature = new JwsSignature.create(
+          signingInput,
           JsonWebAlgorithm.RS256,
           new JwaRsaSignatureContext.withKeys(rsaPrivateKey: rsaPrivateKey()));
       var signature = jwsSignature.encode();
-      expect(signature, equals(
-          'WqJ6jfYd2Pnp9vxn8CcVsbxwB1oAkIdH_QR9l1mF4-N__0JAhwNdcE'
-          'HF5DSxXEbfQuYJ8ybdFQoGPJ5aBmmnCfuY_mbCqWmnkNJTof3vAshfbemPhv7RBgMIBKPjcz3ZXEL6R'
-          'JW34eeKkgT-Mcc5QmftQVBJuECr1F6Y82emIeB5dlFaKmR0hT0qu7DmlsAERNIPuKbqa-_vf8O_QIzB'
-          '5XHXw37fMpRzA_lIVQz2cL_ETpfFINcU0PriSxN2w-rsew2YfaB328QacfXSDC4grOEcmg6dLxuHXXx'
-          'QyKs8P07iNXE9VoGJrTzVBBhOZP7a1znBjgzxs0TdzztbjC-H4Q'));
+      expect(
+          signature,
+          equals('WqJ6jfYd2Pnp9vxn8CcVsbxwB1oAkIdH_QR9l1mF4-N__0JAhwNdcE'
+              'HF5DSxXEbfQuYJ8ybdFQoGPJ5aBmmnCfuY_mbCqWmnkNJTof3vAshfbemPhv7RBgMIBKPjcz3ZXEL6R'
+              'JW34eeKkgT-Mcc5QmftQVBJuECr1F6Y82emIeB5dlFaKmR0hT0qu7DmlsAERNIPuKbqa-_vf8O_QIzB'
+              '5XHXw37fMpRzA_lIVQz2cL_ETpfFINcU0PriSxN2w-rsew2YfaB328QacfXSDC4grOEcmg6dLxuHXXx'
+              'QyKs8P07iNXE9VoGJrTzVBBhOZP7a1znBjgzxs0TdzztbjC-H4Q'));
     });
 
     test('validate', () {
@@ -462,7 +473,8 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
         0xe1,
       ]);
       final jwsSignature = new JwsSignature(signatureBytes);
-      var violations = jwsSignature.validate(signingInput,
+      var violations = jwsSignature.validate(
+          signingInput,
           JsonWebAlgorithm.RS256,
           new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey()));
       expect(violations.length, equals(0));

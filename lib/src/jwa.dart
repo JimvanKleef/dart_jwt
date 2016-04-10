@@ -12,8 +12,6 @@ import 'validation_constraint.dart';
 
 Logger _log = new Logger("jwt.jwa");
 
-const Base64Codec _base64 = const Base64Codec(urlSafe: true);
-
 /**
  * Represents a [JSON Web Algorithm](http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-25)
  */
@@ -44,9 +42,9 @@ abstract class JsonWebAlgorithm<T extends JwaSignatureContext> {
      * to reencode here. Better to avoid the decode in the first place
      */
     final raw = _rawSign(signingInput, signatureContext);
-    final sig = _base64.encode(raw);
+    final sig = bytesToBase64(raw, stringPadding: false);
     _log.finest('signature is $sig');
-    return _base64.decode(sig);
+    return base64ToBytes(sig);
   }
 
   Set<ConstraintViolation> validateSignature(

@@ -1,22 +1,24 @@
 library jwt.codec;
 
 import 'dart:convert';
-import 'jwt_claimset.dart';
-import 'jwt.dart';
+
 import 'jws.dart';
+import 'jwt.dart';
+import 'jwt_claimset.dart';
 
 typedef JsonWebToken<CS> JwtTokenDecoder<CS extends JwtClaimSet>(
-    String jwtToken, {JwsValidationContext validationContext});
+    String jwtToken,
+    {JwsValidationContext validationContext});
 
 typedef CS JwtClaimSetDecoder<CS extends JwtClaimSet>(Map claimSetJson,
     {JwsValidationContext validationContext});
 
 JwtTokenDecoder<JwtClaimSet> defaultJwtTokenDecoder(
     JwtClaimSetDecoder claimSetDecoder) {
-  return (String jwtToken,
-      {JwsValidationContext validationContext}) => new JsonWebToken.decode(
-      jwtToken,
-      validationContext: validationContext, claimSetParser: claimSetDecoder);
+  return (String jwtToken, {JwsValidationContext validationContext}) =>
+      new JsonWebToken.decode(jwtToken,
+          validationContext: validationContext,
+          claimSetParser: claimSetDecoder);
 }
 
 class JwtCodec<CS extends JwtClaimSet> extends Codec<JsonWebToken<CS>, String> {
