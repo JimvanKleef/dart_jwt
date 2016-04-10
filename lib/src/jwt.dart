@@ -1,12 +1,14 @@
 library jwt.jwt;
 
 import 'package:cipher/cipher.dart';
+
 import 'jose.dart';
 import 'jwa.dart';
 import 'jws.dart';
 import 'jwt_claimset.dart';
-export 'jwt_claimset.dart';
 import 'validation_constraint.dart';
+
+export 'jwt_claimset.dart';
 
 /**
  * Represents a [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19)
@@ -56,9 +58,10 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
   factory _JwtInJws.decode(String jwtToken,
       JwsValidationContext validationContext, ClaimSetParser claimSetParser) {
     final base64Segs = jwtToken.split('.');
-    if (base64Segs.length != 3) throw new ArgumentError(
-        "JWS tokens must be in form '<header>.<payload>.<signature>'.\n"
-        "Value: '$jwtToken' is invalid");
+    if (base64Segs.length != 3)
+      throw new ArgumentError(
+          "JWS tokens must be in form '<header>.<payload>.<signature>'.\n"
+          "Value: '$jwtToken' is invalid");
 
     final header = new JwsHeader.decode(base64Segs.first);
     final claimSet =
@@ -106,13 +109,13 @@ class JwtValidationContext extends JwsValidationContext {
       JwaSignatureContext signatureContext, this.claimSetValidationContext)
       : super(signatureContext);
 
-  JwtValidationContext.withSharedSecret(String sharedSecret) : this(
-          new JwaSymmetricKeySignatureContext(sharedSecret),
-          new JwtClaimSetValidationContext());
+  JwtValidationContext.withSharedSecret(String sharedSecret)
+      : this(new JwaSymmetricKeySignatureContext(sharedSecret),
+            new JwtClaimSetValidationContext());
 
-  JwtValidationContext.withRsaPublicKey(RSAPublicKey rsaPublicKey) : this(
-          new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey),
-          new JwtClaimSetValidationContext());
+  JwtValidationContext.withRsaPublicKey(RSAPublicKey rsaPublicKey)
+      : this(new JwaRsaSignatureContext.withKeys(rsaPublicKey: rsaPublicKey),
+            new JwtClaimSetValidationContext());
 }
 
 typedef JwtClaimSet ClaimSetParser(Map json);

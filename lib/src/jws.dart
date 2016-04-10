@@ -1,10 +1,11 @@
 library jwt.jws;
 
+import 'dart:convert';
+
 import 'jose.dart';
 import 'jwa.dart';
-import 'validation_constraint.dart';
-import 'dart:convert';
 import 'util.dart';
+import 'validation_constraint.dart';
 
 typedef JosePayload PayloadParser(Map json);
 
@@ -59,19 +60,24 @@ class JwsHeader extends JoseHeader {
   JwsHeader(JwsType type, JsonWebAlgorithm algorithm)
       : this.build(type: type, algorithm: algorithm);
 
-  JwsHeader.build({JwsType type: JwsType.JWT, this.algorithm, this.jwkSetUrl,
-      this.keyId, this.x509CertificateThumbprint}) :
-        this.type = type != null ? type : JwsType.JWT {
+  JwsHeader.build(
+      {JwsType type: JwsType.JWT,
+      this.algorithm,
+      this.jwkSetUrl,
+      this.keyId,
+      this.x509CertificateThumbprint})
+      : this.type = type != null ? type : JwsType.JWT {
     checkNotNull(this.type);
     checkNotNull(algorithm);
   }
 
-  JwsHeader._fromJson(JsonParser p) : this.build(
-          type: p.get('typ', (v) => JwsType.lookup(v)),
-          algorithm: p.get('alg', (v) => JsonWebAlgorithm.lookup(v)),
-          jwkSetUrl: p.get('jku', (v) => Uri.parse(v)),
-          keyId: p.get('kid'),
-          x509CertificateThumbprint: p.get('x5t'));
+  JwsHeader._fromJson(JsonParser p)
+      : this.build(
+            type: p.get('typ', (v) => JwsType.lookup(v)),
+            algorithm: p.get('alg', (v) => JsonWebAlgorithm.lookup(v)),
+            jwkSetUrl: p.get('jku', (v) => Uri.parse(v)),
+            keyId: p.get('kid'),
+            x509CertificateThumbprint: p.get('x5t'));
 
   JwsHeader.fromJson(Map json) : this._fromJson(new JsonParser(json));
 
@@ -140,8 +146,8 @@ class JwsValidationContext {
   JwsValidationContext(this.signatureContext,
       {Set<JsonWebAlgorithm> supportedAlgorithms})
       : this.supportedAlgorithms = supportedAlgorithms != null
-          ? supportedAlgorithms
-          : new Set.from([JsonWebAlgorithm.HS256]);
+            ? supportedAlgorithms
+            : new Set.from([JsonWebAlgorithm.HS256]);
 }
 
 _noopXform(v) => v;
