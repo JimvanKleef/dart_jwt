@@ -1,6 +1,6 @@
 library jwt.jose;
 
-import 'dart:convert' hide Base64Codec;
+import 'dart:convert';
 
 import 'util.dart';
 
