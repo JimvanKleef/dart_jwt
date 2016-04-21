@@ -1,3 +1,7 @@
+## 0.5.1
+
+- increase upper bound on crypto
+
 ## 0.5.0
 
 - use new urlSafe base64 codec in core dart:convert package
