@@ -55,7 +55,7 @@ void main() {
   });
 
   RSAPublicKey _pkcs1PublicKey(String keyString) {
-    var key_bytes = new Uint8List.fromList(base64ToBytes(keyString));
+    var key_bytes = _toBytes(keyString);
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     var modulus = (seq.elements[0] as ASN1Integer).intValue;
@@ -66,7 +66,7 @@ void main() {
   }
 
   RSAPrivateKey _pkcs1PrivateKey(String keyString) {
-    var key_bytes = new Uint8List.fromList(base64ToBytes(keyString));
+    var key_bytes = _toBytes(keyString);
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     var modulus = (seq.elements[1] as ASN1Integer).intValue;
@@ -79,7 +79,7 @@ void main() {
   }
 
   RSAPrivateKey _pkcs8PrivateKey(String keyString) {
-    var key_bytes = new Uint8List.fromList(base64ToBytes(keyString));
+    var key_bytes = _toBytes(keyString);
     var p = new ASN1Parser(key_bytes);
     ASN1Sequence seq = p.nextObject();
     ASN1OctetString os = seq.elements[2];
@@ -481,3 +481,6 @@ blFWEc1PbdLx5V/thEG7GXpkNR+W4RyXcwUOtzO05Xg9d1WncMzN
     });
   });
 }
+
+Uint8List _toBytes(String keyString) =>
+    new Uint8List.fromList(base64ToBytes(keyString.replaceAll('\n', '')));

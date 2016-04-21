@@ -1,3 +1,8 @@
+## 0.5.0
+
+- use new urlSafe base64 codec in core dart:convert package
+- Breaking change: Now requires SDK >=1.16.0-dev.5.4
+
 ## 0.4.6
 
 - updated crypto dependency with required code changes
