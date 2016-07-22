@@ -2,7 +2,6 @@ image: google/dart
 pipelines:
   default:
     - step:
-      script: # Modify the commands below to build your repository.
-        - pub get
-        - pub run test
-            
+        script: # Modify the commands below to build your repository.
+          - pub get
+          - pub run test
