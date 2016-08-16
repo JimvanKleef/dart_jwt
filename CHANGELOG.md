@@ -1,3 +1,7 @@
+## 0.5.2
+
+- increase upper bound on crypto
+
 ## 0.5.1
 
 - increase upper bound on crypto
