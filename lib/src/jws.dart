@@ -127,12 +127,19 @@ class JwsType {
 
   static JwsType lookup(String name) {
     checkNotNull(name);
-    return checkNotNull(_supportedTypes[name.toUpperCase()]);
+    var t = _supportedTypes[name.toUpperCase()];
+    if (t == null)
+      throw new UnimplementedError("Unimplemented JWS type: \"$name\"");
+    return t;
   }
 
   static const JwsType JWT = const JwsType._internal('JWT');
 
-  static Map<String, JwsType> _supportedTypes = {null: JWT, 'JWT': JWT};
+  static Map<String, JwsType> _supportedTypes = {
+    null: JWT,
+    'JWT': JWT,
+    'JSONWEBTOKEN': JWT,
+  };
 
   String toString() => '$name';
 }

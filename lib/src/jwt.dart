@@ -22,7 +22,7 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
       ClaimSetParser claimSetParser: openIdClaimSetParser}) {
     // TODO: figure out if the jwt is in a jws or jwe structure. Assuming jws for now
     try {
-      return new _JwtInJws.decode(jwtToken, validationContext, claimSetParser);
+      return new JwtInJws.decode(jwtToken, validationContext, claimSetParser);
     } on FormatException catch (e) {
       throw new ArgumentError.value(
           jwtToken, 'jwtToken', 'Could not parse jwtToken - ${e.message}');
@@ -31,7 +31,7 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
 
   factory JsonWebToken.jws(T claimSet, JwaSignatureContext signatureContext,
       {JsonWebAlgorithm algorithm: JsonWebAlgorithm.HS256}) {
-    return new _JwtInJws(claimSet, signatureContext, algorithm);
+    return new JwtInJws(claimSet, signatureContext, algorithm);
   }
 
   // TODO: this doesn't make sense at this level but need to expose somehow.
@@ -47,15 +47,15 @@ abstract class JsonWebToken<T extends JwtClaimSet> {
 /**
  * Represents a [JsonWebToken] that is encoded within a [JsonWebSignature]
  */
-class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
+class JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
     implements JsonWebToken {
   T get claimSet => payload;
 
-  _JwtInJws._internal(
+  JwtInJws._internal(
       JwsHeader header, T claimSet, JwsSignature signature, String signingInput)
       : super(header, claimSet, signature, signingInput);
 
-  factory _JwtInJws.decode(String jwtToken,
+  factory JwtInJws.decode(String jwtToken,
       JwsValidationContext validationContext, ClaimSetParser claimSetParser) {
     final base64Segs = jwtToken.split('.');
     if (base64Segs.length != 3)
@@ -71,7 +71,7 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
     final signingInput = jwtToken.substring(0, jwtToken.lastIndexOf('.'));
 
     final JsonWebToken jwt =
-        new _JwtInJws._internal(header, claimSet, signature, signingInput);
+        new JwtInJws._internal(header, claimSet, signature, signingInput);
 
     if (validationContext != null) {
       final Set<ConstraintViolation> violations =
@@ -84,7 +84,7 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
     return jwt;
   }
 
-  factory _JwtInJws(T claimSet, JwaSignatureContext signatureContext,
+  factory JwtInJws(T claimSet, JwaSignatureContext signatureContext,
       JsonWebAlgorithm algorithm) {
     final JwsHeader header =
         new JwsHeader.build(type: JwsType.JWT, algorithm: algorithm);
@@ -93,7 +93,7 @@ class _JwtInJws<T extends JwtClaimSet> extends JsonWebSignature<T>
     final JwsSignature signature = new JwsSignature.create(
         signingInput, header.algorithm, signatureContext);
 
-    return new _JwtInJws._internal(header, claimSet, signature, signingInput);
+    return new JwtInJws._internal(header, claimSet, signature, signingInput);
   }
 
   @override
