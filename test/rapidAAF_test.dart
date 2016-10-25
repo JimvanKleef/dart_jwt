@@ -66,9 +66,7 @@ class RapidAafClaimSet extends JwtClaimSet {
           .add(new ConstraintViolation("Invalid audience: \"$audience\""));
     }
 
-    // Validate the times
-
-    final now = testTime ?? new DateTime.now();
+    final now = testTime ?? new DateTime.now(); // for testing set testTime
 
     if (now.isBefore(issuedAt.subtract(validationContext.maxClockSkew))) {
       var diff = issuedAt.difference(now);
@@ -231,12 +229,16 @@ void main() {
       var jwt = new JwtInJws.decode(
           example, rapidAafValidationContext, rapidAafClaimSetParser);
 
-      var cs = jwt.claimSet;
-      expect(cs.givenName, equals("Gandalf"));
+      var header = jwt.header.toJson();
+      var claimSet = jwt.claimSet;
 
-      //var header = jwt.header;
-      //print(header); // TODO: validate the header, but ideally not here
-      //print(cs);
+      //print(header);
+      //print(claimSet);
+
+      expect(header["alg"], equals("HS256"));
+      expect(header["typ"], equals("JsonWebToken")); // TODO: check in validate?
+
+      expect(claimSet.givenName, equals("Gandalf"));
     } on ConstraintViolations catch (e) {
       fail("Unexpected exception: ${e.summaryMessage}");
     }
@@ -303,6 +305,26 @@ void main() {
     } on ConstraintViolations catch (e) {
       expect(e.violations.length, equals(1));
       expect(e.violations.first.message, startsWith("Expired:"));
+    }
+  });
+
+  test("bad token", () {
+    for (var badStr in [
+      "e30K",
+      "e30K.e30K",
+      "e30K.e30K.e30K.e30K",
+      "foobar.e30K.e30K",
+      "e30K.e30K.e30K"
+    ]) {
+      try {
+        var jwt = new JwtInJws.decode(
+            badStr, rapidAafValidationContext, rapidAafClaimSetParser);
+        fail("Did not throw exception");
+      } on FormatException catch (e) {
+        //print("${e.runtimeType}: $e");
+      } on ArgumentError catch (e) {
+        //print("${e.runtimeType}: $e");
+      }
     }
   });
 }

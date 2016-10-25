@@ -13,8 +13,9 @@ export 'jwt_claimset.dart';
 /**
  * Represents a [JSON Web Token](http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-19)
  */
-abstract class JsonWebToken<T extends JwtClaimSet> {
-  /// The payload of a JWT is it's claim set
+abstract class JsonWebToken<H extends JoseHeader, T extends JwtClaimSet>
+    implements JoseObject<H, T> {
+  /// The payload of a JWT is its claim set
   T get claimSet;
 
   factory JsonWebToken.decode(String jwtToken,
