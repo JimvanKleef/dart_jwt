@@ -1,3 +1,9 @@
+## 0.6.0
+
+- JwtInJws class made public.
+- Made header available in JsonWebToken.
+- JwsType support for arbitrary values for 'typ' in headers.
+
 ## 0.5.2
 
 - increase upper bound on crypto
