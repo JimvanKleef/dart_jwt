@@ -122,9 +122,9 @@ class JwsSignature extends Base64EncodedData {
 /// The type of [JsonWebSignature] object
 class JwsType {
   final String name;
-  final bool supported;
+  final bool isSupported;
 
-  const JwsType._internal(this.name, this.supported);
+  const JwsType._internal(this.name, this.isSupported);
 
   static JwsType lookup(String name) {
     checkNotNull(name);
