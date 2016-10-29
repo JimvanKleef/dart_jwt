@@ -122,17 +122,25 @@ class JwsSignature extends Base64EncodedData {
 /// The type of [JsonWebSignature] object
 class JwsType {
   final String name;
+  final bool supported;
 
-  const JwsType._internal(this.name);
+  const JwsType._internal(this.name, this.supported);
 
   static JwsType lookup(String name) {
     checkNotNull(name);
-    return checkNotNull(_supportedTypes[name.toUpperCase()]);
+    var t = _supportedTypes[name.toUpperCase()];
+    if (t == null) {
+      t = new JwsType._internal(name, false);
+    }
+    return t;
   }
 
-  static const JwsType JWT = const JwsType._internal('JWT');
+  static const JwsType JWT = const JwsType._internal('JWT', true);
 
-  static Map<String, JwsType> _supportedTypes = {null: JWT, 'JWT': JWT};
+  static Map<String, JwsType> _supportedTypes = {
+    null: JWT,
+    'JWT': JWT,
+  };
 
   String toString() => '$name';
 }
